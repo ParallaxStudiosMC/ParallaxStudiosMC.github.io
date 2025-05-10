@@ -1,0 +1,125 @@
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: url('https://images.unsplash.com/photo-1611174399517-b772a5ff2c8e?auto=format&fit=crop&w=1600&q=80') no-repeat center center fixed;
+    background-size: cover;
+    color: #ffffff;
+    overflow-x: hidden;
+  }
+  
+  .bg-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.6);
+    z-index: -1;
+  }
+  
+  header {
+    text-align: center;
+    padding: 3rem 1rem 1rem;
+  }
+  
+  .logo {
+    width: 100px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 10px rgba(0,255,200,0.4);
+  }
+  
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    margin: 0;
+    font-size: 2.8rem;
+  }
+  
+  nav {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    padding: 1rem 0;
+    margin: 1rem auto;
+  }
+  
+  nav ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  
+  nav a {
+    color: #00ffe5;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: color 0.2s ease;
+  }
+  
+  nav a:hover {
+    color: #ffffff;
+  }
+  
+  main {
+    padding: 2rem;
+    max-width: 1000px;
+    margin: auto;
+  }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 20px rgba(0, 255, 200, 0.08);
+  }
+  
+  .project-grid {
+    display: grid;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+  
+  .project-card {
+    padding: 1.5rem;
+  }
+  
+  .glass-subcard {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0, 255, 200, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .glass-subcard:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0 24px rgba(0, 255, 200, 0.2);
+  }
+  
+  footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: #aaa;
+  }
+
+  a {
+    color: white;
+    text-decoration: underline;
+  }
+  
+  a:visited {
+    color: white;
+  }
+  
+  a:hover {
+    color: #00ffe5; /* Optional: a cool accent on hover */
+  }
+  
