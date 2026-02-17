@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallax Studios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Keep your existing styles from styles.css here if needed */
+        .stat-updated {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 5px;
+        }
+        .project-card {
+            background: linear-gradient(180deg, #131318, #0a0a0d);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+        }
+        .project-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .project-info {
+            padding: 15px;
+        }
+        .project-title {
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .project-downloads {
+            font-size: 13px;
+            color: #ff8b98;
+            background: rgba(255,26,45,0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+        .project-description {
+            font-size: 14px;
+            color: #a7a7b0;
+            margin-bottom: 12px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .project-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            color: #6a6a73;
+        }
+        .project-meta i {
+            margin-right: 3px;
+        }
+        .loader-version {
+            display: inline-block;
+            padding: 2px 6px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 4px;
+            margin-right: 4px;
+        }
+        .hero-stats .stat-block {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .hero-stats .stat-block:hover {
+            opacity: 0.8;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(180deg, #131318, #0a0a0d);
+            color: #e9e9ef;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border-left: 3px solid #ff1a2d;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- dark background base -->
+    <div class="bg-noise"></div>
+
+    <!-- header -->
+    <header class="site-header">
+        <div class="container header-flex">
+            <div class="logo-area">
+<span class="logo-icon">
+  <img src="/img/3ad25a2400279b7d7f22d488b6bf067c4d25cb81-2.png" alt="Parallax" style="height: 24px; width: auto; display: block;">
+</span>
+                <span class="logo-text">PARALLAX STUDIOS</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home" class="active">HOME</a></li>
+                    <li><a href="#projects">PROJECTS</a></li>
+                    <li><a href="#about">ABOUT</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="pre-head">
+                        <i class="fas fa-cube"></i> MINECRAFT DEVELOPMENT SINCE 2024
+                    </div>
+                    <h1>PARALLAX <span class="fw-light">STUDIOS</span></h1>
+                    <p class="hero-lead"><span id="member-count">4</span> members · <span id="project-count">14</span> projects · <span id="download-count">50.2K</span> downloads</p>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-block" onclick="window.location.href='#projects'">
+                            <span class="stat-num" id="stat-projects">14</span>
+                            <span class="stat-label">PROJECTS</span>
+                        </div>
+                        <div class="stat-block" onclick="window.location.href='#projects'">
+                            <span class="stat-num" id="stat-downloads">50.2K</span>
+                            <span class="stat-label">DOWNLOADS</span>
+                        </div>
+                        <div class="stat-block">
+                            <span class="stat-num" id="stat-members">4</span>
+                            <span class="stat-label">MEMBERS</span>
+                        </div>
+                    </div>
+                    <div class="stat-updated" id="last-updated" style="text-align: center; margin-top: 8px;"></div>
+                    
+                    <div class="hero-links">
+                       <a href="https://modrinth.com/organization/parallax" target="_blank" rel="noopener" class="btn-primary">
+  <img src="/img/Modrinth_Logo.webp" alt="Modrinth" style="width: 1em; height: 1em; vertical-align: middle; margin-right: 0.25em; filter: brightness(0) invert(1);">
+  MODRINTH
+</a>
+                        <a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener" class="btn-primary"><i class="fab fa-discord"></i> DISCORD</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROJECTS section (fetched from Modrinth API) -->
+        <section id="projects" class="section-projects">
+            <div class="container">
+                <div class="section-header">
+                    <h2>// FEATURED PROJECTS</h2>
+                    <p class="subhead">Live from Modrinth</p>
+                </div>
+
+                <div class="project-grid" id="project-grid">
+                    <!-- Project cards will be populated by JavaScript -->
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #a7a7b0;">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p>Loading projects from Modrinth...</p>
+                    </div>
+                </div>
+                
+                <div class="center-link">
+                    <a href="https://modrinth.com/organization/parallax" style="filter: brightness(0) invert(1);" target="_blank" rel="noopener" class="external-link" id="view-all-link">VIEW ALL ON MODRINTH <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT section with team and links -->
+        <section id="about" class="section-about">
+            <div class="container">
+                <div class="about-grid">
+                    <div class="about-text">
+                        <h2>// ABOUT</h2>
+                        <p class="about-summary">We're a group of developers who create Minecraft horror mods, QoL mods, plugins, and more!</p>
+                        <div class="about-details">
+                            <span><i class="fas fa-users"></i> <span id="about-members">4</span> members</span>
+                            <span><i class="fas fa-cubes"></i> <span id="about-projects">14</span> projects</span>
+                            <span><i class="fas fa-download"></i> <span id="about-downloads">50.2K</span> downloads</span>
+                        </div>
+                    </div>
+                    <div class="about-links">
+                        <h3>CONNECT</h3>
+                        <ul>
+                            <li>
+<li>
+  <a href="https://modrinth.com/organization/parallax" target="_blank" rel="noopener">
+    <img src="/img/Modrinth_Logo.webp" alt="Modrinth" style="width: 1em; height: 1em; vertical-align: middle; margin-right: 0.25em;">
+    Modrinth
+  </a>
+</li>
+                                </a>
+                            </li>
+                            <li><a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener"><i class="fab fa-discord"></i> Discord</a></li>
+                            <li><a href="https://github.com/ParallaxStudiosMC" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- footer -->
+        <footer class="site-footer">
+            <div class="container">
+                <hr>
+                <div class="footer-content">
+                    <p>© 2026 Parallax Studios</p>
+                    <p>
+                      <p>
+  <a href="https://modrinth.com/organization/parallax" target="_blank" rel="noopener">
+    <img src="/img/Modrinth_Logo.webp" alt="Modrinth" style="width: 1em; height: 1em; vertical-align: middle; margin-right: 0.25em;">
+    Modrinth
+  </a>
+                        <i class="fab fa-discord"></i> <a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener">Discord</a>
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Modrinth API Integration
+        (async function() {
+            // Configuration
+            const CONFIG = {
+                API_BASE: 'https://api.modrinth.com/v2',
+                ORGANIZATION: 'parallax',
+                // List of all Parallax project slugs (from your organization)
+                PROJECT_SLUGS: [
+                    "dreadedviewer",
+                    "shadow_stalker",
+                    "horrorplus",
+                    "parallaxlib",
+                    "desert_wastelands",
+                    "exium",
+                    "periodicores",
+                    "bcop",
+                    "frostbitten_nightmares",
+                    "whiteeyes",
+                    "survivalk",
+                    "simplychickens",
+                    "usefulmaterials",
+                    "modview"
+                ],
+                CACHE_DURATION: 5 * 60 * 1000 // 5 minutes
+            };
+
+            // Helper functions
+            const formatNumber = (num) => {
+                if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+                return num.toString();
+            };
+
+            const showToast = (message, isError = false) => {
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.style.borderLeftColor = isError ? '#ff1a2d' : '#00ff88';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            };
+
+            // Fetch with cache
+            const fetchWithCache = async (url, cacheKey) => {
+                const cached = localStorage.getItem(cacheKey);
+                if (cached) {
+                    const { data, timestamp } = JSON.parse(cached);
+                    if (Date.now() - timestamp < CONFIG.CACHE_DURATION) {
+                        return data;
+                    }
+                }
+                
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    
+                    localStorage.setItem(cacheKey, JSON.stringify({
+                        data,
+                        timestamp: Date.now()
+                    }));
+                    
+                    return data;
+                } catch (error) {
+                    console.error(`Failed to fetch ${url}:`, error);
+                    throw error;
+                }
+            };
+
+            // Fetch project details
+            const fetchProject = async (slug) => {
+                try {
+                    return await fetchWithCache(
+                        `${CONFIG.API_BASE}/project/${slug}`,
+                        `project_${slug}`
+                    );
+                } catch {
+                    return null;
+                }
+            };
+
+            // Fetch project versions (for loaders and game versions)
+            const fetchProjectVersions = async (slug) => {
+                try {
+                    return await fetchWithCache(
+                        `${CONFIG.API_BASE}/project/${slug}/version`,
+                        `versions_${slug}`
+                    );
+                } catch {
+                    return [];
+                }
+            };
+
+            // Main function to load all projects
+            async function loadProjects() {
+                const projectGrid = document.getElementById('project-grid');
+                
+                try {
+                    
+                    // Fetch all projects
+                    const projects = await Promise.all(
+                        CONFIG.PROJECT_SLUGS.map(slug => fetchProject(slug))
+                    );
+                    
+                    const validProjects = projects.filter(p => p !== null);
+                    
+                    // Sort by download count (most downloaded first)
+                    validProjects.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
+                    
+                    // Calculate total downloads
+                    const totalDownloads = validProjects.reduce((sum, p) => sum + (p.downloads || 0), 0);
+                    
+                    // Update statistics
+                    const updateElement = (id, value) => {
+                        const el = document.getElementById(id);
+                        if (el) el.textContent = value;
+                    };
+                    
+                    updateElement('stat-projects', "14");
+                    updateElement('project-count', "14");
+                    updateElement('about-projects', "14");
+                    
+                    updateElement('stat-downloads', formatNumber(totalDownloads));
+                    updateElement('download-count', formatNumber(totalDownloads));
+                    updateElement('about-downloads', formatNumber(totalDownloads));
+                    
+                    updateElement('stat-members', '4');
+                    updateElement('member-count', '4');
+                    updateElement('about-members', '4');
+                    
+                    const now = new Date();
+            
+                    
+                    // Update "VIEW ALL" link
+                    const viewAllLink = document.getElementById('view-all-link');
+                    if (viewAllLink) {
+                        viewAllLink.innerHTML = `VIEW ALL 14 ON MODRINTH <i class="fas fa-arrow-right"></i>`;
+                    }
+                    
+                    // Clear loading state
+                    projectGrid.innerHTML = '';
+                    
+                    // Display first 6 projects (featured)
+                    const featuredProjects = validProjects.slice(0, 6);
+                    
+                    for (const project of featuredProjects) {
+                        // Fetch versions for this project
+                        const versions = await fetchProjectVersions(project.slug);
+                        
+                        // Get unique loaders and latest game version
+                        const loaders = [...new Set(versions.flatMap(v => v.loaders || []))].slice(0, 2);
+                        const latestVersion = versions[0]?.game_versions?.slice(-1)[0] || '1.20.1';
+                        
+                        // Create project card
+                        const card = document.createElement('div');
+                        card.className = 'project-card';
+                        
+                        const iconUrl = project.icon_url || 'https://cdn.modrinth.com/placeholder.svg';
+                        
+                        card.innerHTML = `
+                            <img src="${iconUrl}" alt="${project.title}" loading="lazy" onerror="this.src='https://cdn.modrinth.com/placeholder.svg'">
+                            <div class="project-info">
+                                <div class="project-title">
+                                    ${project.title}
+                                    <span class="project-downloads">
+                                        <i class="fas fa-download"></i> ${formatNumber(project.downloads || 0)}
+                                    </span>
+                                </div>
+                                <div class="project-description">${project.description || 'No description available'}</div>
+                                <div class="project-meta">
+                                    ${loaders.map(l => `<span class="loader-version"><i class="fas fa-cube"></i> ${l}</span>`).join('')}
+                                    <span class="loader-version"><i class="fas fa-tag"></i> ${latestVersion}</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Make card clickable
+                        card.style.cursor = 'pointer';
+                        card.addEventListener('click', () => {
+                            window.open(`https://modrinth.com/project/${project.slug}`, '_blank');
+                        });
+                        
+                        projectGrid.appendChild(card);
+                    }
+                    
+                    showToast('Projects loaded successfully!');
+                    
+                } catch (error) {
+                    console.error('Failed to load projects:', error);
+                    projectGrid.innerHTML = `
+                        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff8b98;">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                            <p>Failed to load projects from Modrinth. Please refresh the page.</p>
+                        </div>
+                    `;
+                    showToast('Failed to load projects', true);
+                }
+            }
+
+            // Smooth scrolling for navigation
+            document.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const targetSection = document.querySelector(targetId);
+                    
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth' });
+                        
+                        // Update active state
+                        document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Check URL hash on load
+            if (window.location.hash) {
+                const targetSection = document.querySelector(window.location.hash);
+                if (targetSection) {
+                    setTimeout(() => {
+                        targetSection.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                }
+            }
+
+            // Load projects when page loads
+            await loadProjects();
+            
+            // Optional: Refresh data every 5 minutes
+            setInterval(loadProjects, 5 * 60 * 1000);
+            
+        })();
+    </script>
+</body>
+</html>
