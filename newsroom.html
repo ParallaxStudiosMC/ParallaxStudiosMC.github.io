@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newsroom — Parallax Studios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ── Newsroom-specific overrides ── */
+        .newsroom-hero {
+            padding: 7rem 0 4rem;
+            background: #0b0d11;
+            border-bottom: 1px solid #1d212a;
+        }
+
+        .newsroom-hero .pre-head {
+            margin-bottom: 0.75rem;
+        }
+
+        .newsroom-hero h1 {
+            font-size: clamp(2.4rem, 6vw, 4.2rem);
+            margin-bottom: 0.6rem;
+        }
+
+        .newsroom-hero .hero-lead {
+            margin-bottom: 0;
+        }
+
+        /* ── Filter bar ── */
+        .filter-bar {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin: 2.5rem 0 3rem;
+        }
+
+        .filter-btn {
+            background: #131820;
+            border: 1px solid #2d3545;
+            color: #8f9db6;
+            padding: 0.4rem 1.1rem;
+            font-size: 0.78rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: #1e2530;
+            border-color: #4d5f7a;
+            color: #d6e0f5;
+        }
+
+        /* ── Post grid ── */
+        .news-section {
+            padding: 4rem 0 6rem;
+            background: #0c0f13;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.8rem;
+        }
+
+        /* ── Featured (spans full width) ── */
+        .news-card.featured {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .news-card.featured .card-thumb {
+            height: 100%;
+            min-height: 220px;
+        }
+
+        .news-card.featured .card-body {
+            padding: 2.4rem 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .news-card.featured .card-title {
+            font-size: 1.5rem;
+        }
+
+        .news-card.featured .card-excerpt {
+            -webkit-line-clamp: 4;
+        }
+
+        /* ── Base card ── */
+        .news-card {
+            background: linear-gradient(180deg, #131318, #0a0a0d);
+            border: 1px solid rgba(255,255,255,0.04);
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+        }
+
+        .card-thumb {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+            background: #0f1218;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            /* placeholder gradient when no image */
+            background: linear-gradient(135deg, #0f1420 0%, #161c28 50%, #0d1117 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* decorative lines inside thumb placeholder */
+        .card-thumb::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                -55deg,
+                transparent,
+                transparent 18px,
+                rgba(255,255,255,0.018) 18px,
+                rgba(255,255,255,0.018) 19px
+            );
+        }
+
+        .card-thumb .thumb-icon {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: rgba(255,255,255,0.07);
+            z-index: 1;
+        }
+
+        .card-body {
+            padding: 1.4rem 1.5rem 1.6rem;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.8rem;
+        }
+
+        .tag {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 0.18rem 0.55rem;
+            border-radius: 2px;
+        }
+
+        .tag-release   { background: rgba(255,26,45,0.12);  color: #ff8b98; border: 1px solid rgba(255,26,45,0.2); }
+        .tag-update    { background: rgba(0,180,255,0.10);  color: #7dd4f0; border: 1px solid rgba(0,180,255,0.2); }
+        .tag-announce  { background: rgba(180,130,255,0.10); color: #c4a8ff; border: 1px solid rgba(180,130,255,0.2); }
+        .tag-devlog    { background: rgba(255,180,0,0.10);  color: #ffd470; border: 1px solid rgba(255,180,0,0.2); }
+        .tag-community { background: rgba(0,220,130,0.10);  color: #68edb0; border: 1px solid rgba(0,220,130,0.2); }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e8eef8;
+            margin-bottom: 0.55rem;
+            line-height: 1.35;
+        }
+
+        .card-excerpt {
+            font-size: 0.88rem;
+            color: #8d99b5;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: #5d697e;
+        }
+
+        .card-meta i {
+            margin-right: 0.28rem;
+        }
+
+        .card-author {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-left: auto;
+        }
+
+        .author-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        /* ── Read-more link ── */
+        .card-read-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #5a6e8c;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-top: 0.4rem;
+            transition: color 0.15s;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-family: inherit;
+            padding: 0;
+        }
+
+        .card-read-more:hover { color: #b7c7e3; }
+        .card-read-more i { font-size: 0.65rem; }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: #0f1318;
+            border: 1px solid #2a3244;
+            max-width: 680px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalIn 0.2s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-close {
+            position: sticky;
+            top: 0;
+            display: flex;
+            justify-content: flex-end;
+            padding: 1rem 1.2rem 0;
+            background: #0f1318;
+            z-index: 1;
+        }
+
+        .modal-close button {
+            background: none;
+            border: 1px solid #2a3244;
+            color: #8f9db6;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.15s;
+            font-family: inherit;
+        }
+
+        .modal-close button:hover { color: white; border-color: #5a6e8c; }
+
+        .modal-content {
+            padding: 1.2rem 2rem 2.4rem;
+        }
+
+        .modal-tags { margin-bottom: 1rem; }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #e8eef8;
+            line-height: 1.3;
+            margin-bottom: 0.8rem;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 1.2rem;
+            font-size: 0.8rem;
+            color: #5d697e;
+            margin-bottom: 1.8rem;
+            padding-bottom: 1.4rem;
+            border-bottom: 1px solid #1e2535;
+        }
+
+        .modal-body {
+            color: #b0bccf;
+            font-size: 0.95rem;
+            line-height: 1.75;
+        }
+
+        .modal-body p { margin-bottom: 1rem; }
+
+        .modal-body h3 {
+            color: #d8e3f5;
+            font-size: 1.05rem;
+            font-weight: 500;
+            margin: 1.5rem 0 0.6rem;
+        }
+
+        .modal-body ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        .modal-body ul li {
+            padding-left: 1.2rem;
+            position: relative;
+            margin-bottom: 0.4rem;
+            color: #9eacbf;
+        }
+
+        .modal-body ul li::before {
+            content: '—';
+            position: absolute;
+            left: 0;
+            color: #3d4f66;
+        }
+
+        /* ── Sidebar newsletter stub ── */
+        .newsroom-layout {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 3rem;
+            align-items: start;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 6rem;
+        }
+
+        .sidebar-card {
+            background: #0f1318;
+            border: 1px solid #232e3f;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar-card h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7a889e;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .sidebar-card p {
+            font-size: 0.85rem;
+            color: #8d99b5;
+            line-height: 1.55;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-discord {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            color: #b7c7e3;
+            font-size: 0.85rem;
+            border: 1px solid #2d3b54;
+            padding: 0.6rem 1rem;
+            transition: 0.15s;
+        }
+
+        .sidebar-discord:hover {
+            background: #1a2130;
+            border-color: #4d6080;
+            color: white;
+        }
+
+        .sidebar-discord i { color: #7289da; }
+
+        .sidebar-links li {
+            list-style: none;
+            border-bottom: 1px solid #1a2030;
+        }
+
+        .sidebar-links li:last-child { border: none; }
+
+        .sidebar-links a {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            text-decoration: none;
+            color: #8d99b5;
+            font-size: 0.85rem;
+            transition: color 0.15s;
+        }
+
+        .sidebar-links a:hover { color: #d6e0f5; }
+        .sidebar-links a i { font-size: 0.7rem; }
+
+        /* ── Empty state ── */
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 4rem;
+            color: #5d697e;
+        }
+
+        .no-results i { font-size: 2rem; margin-bottom: 1rem; display: block; }
+
+        /* ── Responsive ── */
+        @media (max-width: 900px) {
+            .newsroom-layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .news-card.featured { grid-template-columns: 1fr; }
+            .news-card.featured .card-thumb { height: 200px; }
+        }
+
+        @media (max-width: 600px) {
+            .filter-bar { gap: 0.4rem; }
+            .modal-content { padding: 1rem 1.2rem 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-noise"></div>
+
+    <header class="site-header">
+        <div class="container header-flex">
+            <div class="logo-area">
+                <span class="logo-icon">
+                    <img src="/img/3ad25a2400279b7d7f22d488b6bf067c4d25cb81-2.png" alt="Parallax" style="height: 24px; width: auto; display: block;">
+                </span>
+                <span class="logo-text">PARALLAX STUDIOS</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">HOME</a></li>
+                    <li><a href="index.html#projects">PROJECTS</a></li>
+                    <li><a href="index.html#about">ABOUT</a></li>
+                    <li><a href="newsroom.html" class="active">NEWSROOM</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="newsroom-hero">
+        <div class="container">
+            <div class="pre-head"><i class="fas fa-newspaper"></i> PARALLAX STUDIOS NEWSROOM</div>
+            <h1>LATEST <span class="fw-light">NEWS</span></h1>
+            <p class="hero-lead">Updates, release notes, and announcements from the team.</p>
+        </div>
+    </section>
+
+    <section class="news-section">
+        <div class="container">
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="release">Releases</button>
+                <button class="filter-btn" data-filter="update">Updates</button>
+                <button class="filter-btn" data-filter="announce">Announcements</button>
+                <button class="filter-btn" data-filter="devlog">Dev Logs</button>
+                <button class="filter-btn" data-filter="community">Community</button>
+            </div>
+
+            <div class="newsroom-layout">
+                <!-- Main grid -->
+                <div class="news-grid" id="news-grid"></div>
+
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-card">
+                        <h4>// Join the community</h4>
+                        <p>Get real-time updates, report bugs, and chat with the team on Discord.</p>
+                        <a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener" class="sidebar-discord">
+                            <i class="fab fa-discord"></i> Join our Discord
+                        </a>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h4>// Quick links</h4>
+                        <ul class="sidebar-links">
+                            <li><a href="https://modrinth.com/organization/parallax" target="_blank" rel="noopener">All projects on Modrinth <i class="fas fa-arrow-right"></i></a></li>
+                            <li><a href="https://github.com/ParallaxStudiosMC" target="_blank" rel="noopener">GitHub <i class="fas fa-arrow-right"></i></a></li>
+                            <li><a href="index.html#projects">Featured projects <i class="fas fa-arrow-right"></i></a></li>
+                        </ul>
+                    </div>
+
+                    <div class="sidebar-card">
+                        <h4>// About this newsroom</h4>
+                        <p style="font-size:0.8rem; color:#6a7589;">Posts are written by Parallax Studios team members. For urgent issues, reach us on Discord.</p>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-box" id="modal-box">
+            <div class="modal-close"><button id="modal-close-btn"><i class="fas fa-times"></i></button></div>
+            <div class="modal-content" id="modal-content"></div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container">
+            <hr>
+            <div class="footer-content">
+                <p>© 2026 Parallax Studios</p>
+                <p>
+                    <a href="https://modrinth.com/organization/parallax" target="_blank" rel="noopener">
+                        <img src="/img/Modrinth_Logo.webp" alt="Modrinth" style="width:1em;height:1em;vertical-align:middle;margin-right:0.25em;">
+                        Modrinth
+                    </a>
+                    &nbsp;&nbsp;
+                    <i class="fab fa-discord"></i>
+                    <a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener">Discord</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    // ── News data ──────────────────────────────────────────────────────────────
+    // Add your posts here. Each object is one card.
+    const NEWS = [
+        {
+            id: 1,
+            featured: true,
+            tags: ["announce"],
+            title: "Beginning the transition to Minecraft 1.20.1",
+            excerpt: "The biggest Parallax Studios news in years, finally updating to 1.20.1.",
+            date: "2026-03-29",
+            author: "zoeyaviation",
+            authorColor: "#e05c6a",
+            icon: "fa-globe",
+            projectSlug: "",
+            body: `
+                <p>Parallax Studios has used Minecraft 1.19.2 as the platform for horror mods, and we are now beginning the switch to Minecraft 1.20.1, a new, more modern, and stable platform for our horror mods.</p>
+                <h3>What's new</h3>
+                <ul>
+                    <li>Parallax Studios is beginning to transition to Minecraft 1.20.1</li>
+                    <li>Minecraft 1.19.2 is beginning to show its age, we have been using it for 2 years now, but Minecraft 1.20.1 is a newer, more modern game version, that is even more stable than 1.19.2.</li>
+                    <li>Minecraft 1.19.2 support will continue for around 3-6 more months while we prepare for the massive switch</li>
+                    <li>After 1.19.2 support ends, players will need to upgrade to 1.20.1, or be restricted to older mods and versions of them.</li>
+                    <li>Upgrading to 1.20.1 will allow us to make our mods more advanced, and scarier.</li>
+                </ul>
+            `
+        },
+        {
+            id: 2,
+            tags: ["community"],
+            title: "Thank you for 50,000 downloads",
+            excerpt: "We hit 50K total downloads across all Parallax projects. A short note from the team on where we've been and where we're headed.",
+            date: "2026-01-28",
+            author: "zoeyaviation",
+            authorColor: "#e05c6a",
+            icon: "fa-heart",
+            projectSlug: null,
+            body: `
+                <p>We crossed 50,000 total downloads across all Parallax Studios projects this week. That's a number we genuinely didn't expect to reach when we started building mods in 2024.</p>
+                <p>A few things we want to say:</p>
+                <ul>
+                    <li>Thank you to everyone who downloaded, reviewed, and reported bugs.</li>
+                    <li>Thank you to the Discord community for the patience and enthusiasm.</li>
+                    <li>Every mod we release will continue to be free, forever.</li>
+                </ul>
+            `
+        }
+    ];
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    const TAG_META = {
+        release:   { label: 'Release',      cls: 'tag-release' },
+        update:    { label: 'Update',       cls: 'tag-update' },
+        announce:  { label: 'Announcement', cls: 'tag-announce' },
+        devlog:    { label: 'Dev Log',      cls: 'tag-devlog' },
+        community: { label: 'Community',    cls: 'tag-community' },
+    };
+
+    function formatDate(iso) {
+        const d = new Date(iso + 'T00:00:00');
+        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function tagHTML(tags) {
+        return tags.map(t => {
+            const m = TAG_META[t] || { label: t, cls: '' };
+            return `<span class="tag ${m.cls}">${m.label}</span>`;
+        }).join('');
+    }
+
+    function initials(str) {
+        return str.slice(0, 2).toUpperCase();
+    }
+
+    // ── Render ─────────────────────────────────────────────────────────────────
+    function renderCard(post) {
+        const card = document.createElement('div');
+        card.className = 'news-card' + (post.featured ? ' featured' : '');
+        card.dataset.tags = post.tags.join(',');
+
+        const modrinthLink = post.projectSlug
+            ? `<a href="https://modrinth.com/project/${post.projectSlug}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#7dd4f0;font-size:0.75rem;"><i class="fas fa-external-link-alt"></i> Modrinth</a>`
+            : '';
+
+        card.innerHTML = `
+            <div class="card-thumb">
+                <div class="thumb-icon"><i class="fas ${post.icon}"></i></div>
+            </div>
+            <div class="card-body">
+                <div class="card-tags">${tagHTML(post.tags)}</div>
+                <div class="card-title">${post.title}</div>
+                <div class="card-excerpt">${post.excerpt}</div>
+                <div class="card-meta">
+                    <span><i class="fas fa-calendar-alt"></i>${formatDate(post.date)}</span>
+                    ${modrinthLink}
+                    <span class="card-author">
+                        <span class="author-dot" style="background:${post.authorColor};">${initials(post.author)}</span>
+                        ${post.author}
+                    </span>
+                </div>
+                <button class="card-read-more">READ MORE <i class="fas fa-arrow-right"></i></button>
+            </div>
+        `;
+
+        card.addEventListener('click', () => openModal(post));
+        return card;
+    }
+
+    function renderGrid(filter = 'all') {
+        const grid = document.getElementById('news-grid');
+        grid.innerHTML = '';
+
+        const filtered = filter === 'all'
+            ? NEWS
+            : NEWS.filter(p => p.tags.includes(filter));
+
+        if (!filtered.length) {
+            grid.innerHTML = `<div class="no-results"><i class="fas fa-inbox"></i><p>No posts in this category yet.</p></div>`;
+            return;
+        }
+
+        filtered.forEach(post => grid.appendChild(renderCard(post)));
+    }
+
+    // ── Modal ──────────────────────────────────────────────────────────────────
+    function openModal(post) {
+        const modrinthBtn = post.projectSlug
+            ? `<a href="https://modrinth.com/project/${post.projectSlug}" target="_blank" rel="noopener" style="color:#7dd4f0;font-size:0.85rem;"><i class="fas fa-external-link-alt"></i> View on Modrinth</a>`
+            : '';
+
+        document.getElementById('modal-content').innerHTML = `
+            <div class="modal-tags">${tagHTML(post.tags)}</div>
+            <div class="modal-title">${post.title}</div>
+            <div class="modal-meta">
+                <span><i class="fas fa-calendar-alt"></i> ${formatDate(post.date)}</span>
+                <span>
+                    <span class="author-dot" style="background:${post.authorColor};display:inline-flex;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center;font-size:0.55rem;font-weight:700;color:white;margin-right:0.3rem;">${initials(post.author)}</span>
+                    ${post.author}
+                </span>
+                ${modrinthBtn}
+            </div>
+            <div class="modal-body">${post.body}</div>
+        `;
+
+        document.getElementById('modal-overlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal-close-btn').addEventListener('click', closeModal);
+    document.getElementById('modal-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('modal-overlay')) closeModal();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+    // ── Filters ────────────────────────────────────────────────────────────────
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderGrid(btn.dataset.filter);
+        });
+    });
+
+    // ── Init ───────────────────────────────────────────────────────────────────
+    renderGrid();
+    </script>
+</body>
+</html>

@@ -122,6 +122,7 @@
                     <li><a href="#home" class="active">HOME</a></li>
                     <li><a href="#projects">PROJECTS</a></li>
                     <li><a href="#about">ABOUT</a></li>
+                    <li><a href="newsroom.html">NEWSROOM</a></li>
                 </ul>
             </nav>
         </div>
@@ -439,7 +440,7 @@
             }
 
             // Smooth scrolling for navigation
-            document.querySelectorAll('nav a').forEach(link => {
+            document.querySelectorAll('nav a[href^="#"]').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const targetId = link.getAttribute('href');
@@ -476,5 +477,3 @@
 </body>
 
 </html>
-
-
