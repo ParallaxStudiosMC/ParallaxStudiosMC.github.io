@@ -123,6 +123,7 @@
                     <li><a href="#projects">PROJECTS</a></li>
                     <li><a href="#about">ABOUT</a></li>
                     <li><a href="newsroom.html">NEWSROOM</a></li>
+                    <li><a href="techdivision/index.html">TECH</a></li>
                 </ul>
             </nav>
         </div>
@@ -148,7 +149,7 @@
                             <span class="stat-label">DOWNLOADS</span>
                         </div>
                         <div class="stat-block">
-                            <span class="stat-num" id="stat-members">3</span>
+                            <span class="stat-num" id="stat-members">4</span>
                             <span class="stat-label">MEMBERS</span>
                         </div>
                     </div>
@@ -248,6 +249,7 @@
                 ORGANIZATION: 'parallax',
                 // List of all Parallax project slugs (from your organization)
                 PROJECT_SLUGS: [
+                    "never-alone",
                     "dreadedviewer",
                     "shadow_stalker",
                     "horrorplus",
@@ -259,7 +261,7 @@
                     "frostbitten_nightmares",
                     "whiteeyes",
                     "survivalk",
-                    "simplychickens",
+                    "modernizemc",
                     "usefulmaterials",
                     "modview"
                 ],
@@ -358,17 +360,17 @@
                         if (el) el.textContent = value;
                     };
                     
-                    updateElement('stat-projects', "14");
-                    updateElement('project-count', "14");
-                    updateElement('about-projects', "14");
+                    updateElement('stat-projects', "15");
+                    updateElement('project-count', "15");
+                    updateElement('about-projects', "15");
                     
                     updateElement('stat-downloads', formatNumber(totalDownloads));
                     updateElement('download-count', formatNumber(totalDownloads));
                     updateElement('about-downloads', formatNumber(totalDownloads));
                     
-                    updateElement('stat-members', '3');
-                    updateElement('member-count', '3');
-                    updateElement('about-members', '3');
+                    updateElement('stat-members', '4');
+                    updateElement('member-count', '4');
+                    updateElement('about-members', '4');
                     
                     const now = new Date();
             
@@ -376,7 +378,7 @@
                     // Update "VIEW ALL" link
                     const viewAllLink = document.getElementById('view-all-link');
                     if (viewAllLink) {
-                        viewAllLink.innerHTML = `VIEW ALL 14 ON MODRINTH <i class="fas fa-arrow-right"></i>`;
+                        viewAllLink.innerHTML = `VIEW ALL 15 ON MODRINTH <i class="fas fa-arrow-right"></i>`;
                     }
                     
                     // Clear loading state

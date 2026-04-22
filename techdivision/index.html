@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Division — Parallax Studios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <style>
+        /* Tech Division specific styles */
+        .tech-hero {
+            min-height: 75vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(180deg, #0b0d11 0%, #0a0c0f 100%);
+            padding: 5rem 0;
+            border-bottom: 1px solid #1d212a;
+        }
+
+        .tech-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 180, 255, 0.08);
+            border: 1px solid rgba(0, 180, 255, 0.2);
+            color: #7dd4f0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 0.4rem 1rem;
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+        }
+
+        .tech-tag i {
+            font-size: 0.8rem;
+        }
+
+        .section-software {
+            padding: 5rem 0;
+            border-bottom: 1px solid #1d212a;
+            background-color: #0c0f13;
+        }
+
+        .software-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .software-card {
+            background: linear-gradient(180deg, #131318, #0a0a0d);
+            border: 1px solid rgba(255,255,255,0.04);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .software-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0, 180, 255, 0.3);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+        }
+
+        .software-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .software-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #1a2332 0%, #0f141c 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #7dd4f0;
+            border: 1px solid rgba(0, 180, 255, 0.15);
+        }
+
+        .software-title-wrap {
+            flex: 1;
+        }
+
+        .software-title {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #e8eef8;
+            margin-bottom: 0.25rem;
+        }
+
+        .software-status {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 0.15rem 0.5rem;
+            border-radius: 2px;
+        }
+
+        .status-dev { background: rgba(255, 180, 0, 0.12); color: #ffd470; border: 1px solid rgba(255, 180, 0, 0.2); }
+        .status-beta { background: rgba(0, 220, 130, 0.12); color: #68edb0; border: 1px solid rgba(0, 220, 130, 0.2); }
+        .status-released { background: rgba(0, 180, 255, 0.12); color: #7dd4f0; border: 1px solid rgba(0, 180, 255, 0.2); }
+
+        .software-body {
+            padding: 1.5rem;
+        }
+
+        .software-desc {
+            font-size: 0.9rem;
+            color: #8d99b5;
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
+        .software-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            font-size: 0.75rem;
+        }
+
+        .tech-badge {
+            background: #1a202c;
+            border: 1px solid #2d3545;
+            color: #7a889e;
+            padding: 0.25rem 0.7rem;
+            border-radius: 4px;
+        }
+
+        .software-links {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .software-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: #b7c7e3;
+            text-decoration: none;
+            border-bottom: 1px solid #3b4557;
+            padding-bottom: 2px;
+            transition: 0.15s;
+        }
+
+        .software-link:hover {
+            color: white;
+            border-bottom-color: #8a9ac0;
+        }
+
+        .software-link i {
+            font-size: 0.75rem;
+        }
+
+        .section-focus {
+            padding: 4rem 0;
+            background-color: #0a0d11;
+        }
+
+        .focus-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .focus-card {
+            background: #11151c;
+            border: 1px solid #272e39;
+            padding: 2rem;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .focus-card:hover {
+            border-color: #3d4a5c;
+        }
+
+        .focus-icon {
+            font-size: 2rem;
+            color: #7dd4f0;
+            margin-bottom: 1rem;
+        }
+
+        .focus-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #e0e7f5;
+            margin-bottom: 0.75rem;
+        }
+
+        .focus-desc {
+            font-size: 0.9rem;
+            color: #8d99b5;
+            line-height: 1.6;
+        }
+
+        .tech-about {
+            padding: 4rem 0;
+            background-color: #080a0d;
+            border-bottom: 1px solid #1d212a;
+        }
+
+        .tech-about-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 4rem;
+            align-items: start;
+        }
+
+        .tech-about-text h2 {
+            border-left: 3px solid #7dd4f0;
+        }
+
+        .tech-mission {
+            font-size: 1.1rem;
+            color: #a6b2c6;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+        }
+
+        .tech-connect h3 {
+            color: #d0daf0;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+
+        .tech-connect ul {
+            list-style: none;
+        }
+
+        .tech-connect li {
+            margin-bottom: 1rem;
+        }
+
+        .tech-connect a {
+            color: #b6c5e0;
+            text-decoration: none;
+            border-bottom: 1px solid #384153;
+            padding-bottom: 2px;
+            font-size: 1rem;
+        }
+
+        .tech-connect a i {
+            width: 2rem;
+            color: #7b89a4;
+        }
+
+        .tech-connect a:hover {
+            color: white;
+            border-bottom-color: #8a9ac0;
+        }
+
+        .coming-soon-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255, 26, 45, 0.12);
+            color: #ff8b98;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2px;
+            border: 1px solid rgba(255, 26, 45, 0.2);
+        }
+
+        @media (max-width: 900px) {
+            .focus-grid { grid-template-columns: 1fr; }
+            .tech-about-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .software-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 700px) {
+            .hero-stats { gap: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-noise"></div>
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="container header-flex">
+            <div class="logo-area">
+                <span class="logo-icon">
+                    <img src="/img/3ad25a2400279b7d7f22d488b6bf067c4d25cb81-2.png" alt="Parallax" style="height: 24px; width: auto; display: block;">
+                </span>
+                <span class="logo-text">PARALLAX STUDIOS</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="../index.html">HOME</a></li>
+                    <li><a href="../index.html#projects">PROJECTS</a></li>
+                    <li><a href="../index.html#about">ABOUT</a></li>
+                    <li><a href="../newsroom.html">NEWSROOM</a></li>
+                    <li><a href="index.html" class="active">TECH</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="tech-hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="tech-tag">
+                        <i class="fas fa-microchip"></i>
+                        SOFTWARE & GAME DEVELOPMENT
+                    </div>
+                    <h1>TECH <span class="fw-light">DIVISION</span></h1>
+                    <p class="hero-lead">Building game engines, developer tools, and standalone experiences beyond Minecraft.</p>
+                    
+                    <div class="hero-stats">
+                        <div class="stat-block">
+                            <span class="stat-num">2</span>
+                            <span class="stat-label">PROJECTS</span>
+                        </div>
+                        <div class="stat-block">
+                            <span class="stat-num">1</span>
+                            <span class="stat-label">IN DEV</span>
+                        </div>
+                        <div class="stat-block">
+                            <span class="stat-num">1</span>
+                            <span class="stat-label">RELEASED</span>
+                        </div>
+                    </div>
+
+                    <div class="hero-links">
+                        <a href="#software" class="btn-primary"><i class="fas fa-code"></i> VIEW PROJECTS</a>
+                        <a href="https://github.com/ParallaxStudiosMC" target="_blank" rel="noopener" class="btn-primary"><i class="fab fa-github"></i> GITHUB</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Software Projects Section -->
+        <section id="software" class="section-software">
+            <div class="container">
+                <div class="section-header">
+                    <h2>// SOFTWARE PROJECTS</h2>
+                    <p class="subhead">Games, engines, and developer tools</p>
+                </div>
+
+                <div class="software-grid">
+                    <!-- Project 1 -->
+                    <div class="software-card">
+                        <div class="software-header">
+                            <div class="software-icon">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <div class="software-title-wrap">
+                                <div class="software-title">Parallax2D</div>
+                                <span class="software-status status-dev">Released - v1.2.0</span>
+                            </div>
+                        </div>
+                        <div class="software-body">
+                            <p class="software-desc">A light, GDI+ based 2D game engine built for rapid development with a C# codebase.</p>
+                            <div class="software-meta">
+                                <span class="tech-badge">C#</span>
+                                <span class="tech-badge">GDI+</span>
+                            </div>
+                            <div class="software-links">
+                                <span class="coming-soon-badge"><i class="fas fa-clock"></i> Released</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project 2 -->
+                    <div class="software-card">
+                        <div class="software-header">
+                            <div class="software-icon">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div class="software-title-wrap">
+                                <div class="software-title">Unreleased Project</div>
+                                <span class="software-status status-dev">In Development</span>
+                            </div>
+                        </div>
+                        <div class="software-body">
+                            <p class="software-desc">Details coming soon.</p>
+                            <div class="software-meta">
+                                <span class="tech-badge">COMING SOON!</span>
+                            </div>
+                            <div class="software-links">
+                                <span class="coming-soon-badge"><i class="fas fa-clock"></i> Coming later this year</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Focus Areas Section -->
+        <section class="section-focus">
+            <div class="container">
+                <div class="section-header">
+                    <h2>// WHAT WE ARE BUILDING</h2>
+                    <p class="subhead">What we're building in the tech division</p>
+                </div>
+
+                <div class="focus-grid">
+                    <div class="focus-card">
+                        <div class="focus-icon"><i class="fas fa-rocket"></i></div>
+                        <div class="focus-title">Game Engines</div>
+                        <p class="focus-desc">We build game engines for created 2D games, right now, with Parallax2D.</p>
+                    </div>
+                    <div class="focus-card">
+                        <div class="focus-icon"><i class="fas fa-laptop-code"></i></div>
+                        <div class="focus-title">Software</div>
+                        <p class="focus-desc">We create software such as browsers, editors, websites, and many other tools.</p>
+                    </div>
+                    <div class="focus-card">
+                        <div class="focus-icon"><i class="fas fa-compact-disc"></i></div>
+                        <div class="focus-title">Games</div>
+                        <p class="focus-desc">We create games, too. Maybe it's our next big software project?</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section class="tech-about">
+            <div class="container">
+                <div class="tech-about-grid">
+                    <div class="tech-about-text">
+                        <h2>// ABOUT THE DIVISION</h2>
+                        <p class="tech-mission">The Tech Division is Parallax Studios' venture into software development beyond Minecraft. While we will remain focused on modding, this division explores games, game engines, software, and more.</p>
+                        <p class="tech-mission">Our goal is to create unique software for our users that allow them to do new things, immerse in game experiences, and development experiences.</p>
+                        <div class="about-details" style="margin-top: 1.5rem;">
+                            <span><i class="fas fa-code-branch"></i>Open Source first - Many of our tech projects will be open-source on GitHub.</span>
+                            <span><i class="fas fa-users"></i> Small team, big goals</span>
+                            <span><i class="fas fa-calendar"></i> Founded 2026</span>
+                        </div>
+                    </div>
+                    <div class="tech-connect">
+                        <h3>CONNECT</h3>
+                        <ul>
+                            <li><a href="https://github.com/ParallaxStudiosMC" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a></li>
+                            <li><a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener"><i class="fab fa-discord"></i> Discord</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <div class="container">
+                <hr>
+                <div class="footer-content">
+                    <p>© 2026 Parallax Studios — Tech Division</p>
+                    <p>
+                        <a href="https://github.com/ParallaxStudiosMC" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>
+                        &nbsp;&nbsp;
+                        <a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener"><i class="fab fa-discord"></i> Discord</a>
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('nav a[href^="#"]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Check URL hash on load
+        if (window.location.hash) {
+            const targetSection = document.querySelector(window.location.hash);
+            if (targetSection) {
+                setTimeout(() => {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
+        }
+    </script>
+</body>
+</html>
