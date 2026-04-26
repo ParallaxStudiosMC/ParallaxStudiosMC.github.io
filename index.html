@@ -185,6 +185,9 @@
                 <div class="center-link">
                     <a href="https://modrinth.com/organization/parallax" style="filter: brightness(0) invert(1);" target="_blank" rel="noopener" class="external-link" id="view-all-link">VIEW ALL ON MODRINTH <i class="fas fa-arrow-right"></i></a>
                 </div>
+                                <div class="center-link">
+                    <a href="https://www.curseforge.com/members/parallax_studios/projects" style="filter: brightness(0) invert(1);" target="_blank" rel="noopener" class="external-link" id="view-all-link">VIEW SELECT PROJECTS ON CURSEFORGE <i class="fas fa-arrow-right"></i></a>
+                </div>
             </div>
         </section>
 
@@ -375,6 +378,11 @@
                     
                     const now = new Date();
             
+                                        // Update "VIEW ALL" link
+                    const viewAllCFLink = document.getElementById('view-all-link');
+                    if (viewAllLink) {
+                        viewAllLink.innerHTML = `VIEW SELECT PROJECTS ON CURSEFORGE <i class="fas fa-arrow-right"></i>`;
+                    }
                     
                     // Update "VIEW ALL" link
                     const viewAllLink = document.getElementById('view-all-link');
