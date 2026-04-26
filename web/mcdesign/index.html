@@ -1,0 +1,1950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCDesign v0.1 — Minecraft Texture Editor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0d11;--bg2:#0c0f13;--bg3:#11151c;--bg4:#131318;
+  --border:#1d212a;--border2:#272e39;--border3:#2d3545;
+  --text:#e8eef8;--text2:#a6b2c6;--text3:#8d99b5;--text4:#7a889e;
+  --blue:#7dd4f0;--blue-dim:rgba(0,180,255,0.12);--blue-border:rgba(0,180,255,0.2);
+  --green:#68edb0;--green-dim:rgba(0,220,130,0.12);
+  --amber:#ffd470;--amber-dim:rgba(255,180,0,0.12);
+  --red:#ff8b98;--red-dim:rgba(255,26,45,0.12);
+  --accent:#00b4ff;
+  --toolbar-h:36px;
+  --sidebar-w:220px;
+  --panel-r:260px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;overflow:hidden}
+
+body.light-mode {
+  --bg:#f0f2f7;--bg2:#e8ebf2;--bg3:#dde1ea;--bg4:#d4d8e3;
+  --border:#c8cdd8;--border2:#b8bece;--border3:#a8b0c2;
+  --text:#1a1f2e;--text2:#2d3548;--text3:#4a5470;--text4:#6b7590;
+  --blue:#0077cc;--blue-dim:rgba(0,120,220,0.10);--blue-border:rgba(0,120,220,0.25);
+  --green:#007a4d;--green-dim:rgba(0,140,80,0.10);
+  --amber:#a06000;--amber-dim:rgba(180,110,0,0.10);
+  --red:#cc2233;--red-dim:rgba(200,30,50,0.10);
+  --accent:#0077cc;
+}
+body.light-mode #menubar,
+body.light-mode #canvas-toolbar { background:#dde1ea; }
+body.light-mode #canvas-viewport {
+  background: repeating-conic-gradient(#c8ccd5 0% 25%, #d4d8e1 0% 50%) 0 0 / 20px 20px;
+}
+body.light-mode .dropdown,
+body.light-mode .modal { background:#edf0f7; }
+body.light-mode #statusbar { background:#d4d8e3; }
+body.light-mode #toast { background:#e4e8f2; }
+body.light-mode #search-input,
+body.light-mode .color-input-wrap input,
+body.light-mode .mc-color-input-area,
+body.light-mode .mc-color-preview,
+body.light-mode .form-row select,
+body.light-mode .form-row input[type=text],
+body.light-mode #new-name,
+body.light-mode select { background:#f8f9fc; color:var(--text); }
+
+/* ===== MENU BAR ===== */
+#menubar{
+  height:var(--toolbar-h);background:#080a0e;border-bottom:1px solid var(--border);
+  display:flex;align-items:stretch;position:relative;z-index:1000;user-select:none;
+  flex-shrink:0;
+}
+.menu-logo{
+  display:flex;align-items:center;gap:8px;padding:0 16px;
+  border-right:1px solid var(--border);
+  font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;
+  color:var(--blue);white-space:nowrap;
+}
+.menu-logo span{color:var(--text3);font-weight:400;font-size:11px;margin-left:4px;letter-spacing:1px;}
+.menu-items{display:flex;align-items:stretch;}
+.menu-item{
+  position:relative;display:flex;align-items:center;padding:0 14px;
+  font-size:12px;color:var(--text2);cursor:pointer;letter-spacing:.5px;
+  transition:background .1s,color .1s;
+}
+.menu-item:hover,.menu-item.active{background:rgba(255,255,255,.05);color:var(--text);}
+.menu-item.active .dropdown{display:block;}
+.dropdown{
+  display:none;position:absolute;top:100%;left:0;
+  background:#0d1017;border:1px solid var(--border2);min-width:200px;
+  z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.6);
+}
+.dropdown-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 16px;font-size:12px;color:var(--text2);cursor:pointer;
+  transition:background .1s,color .1s;gap:20px;
+}
+.dropdown-item:hover{background:rgba(0,180,255,.07);color:var(--text);}
+.dropdown-item.disabled{opacity:.4;cursor:default;}
+.dropdown-sep{height:1px;background:var(--border);margin:4px 0;}
+.shortcut{color:var(--text4);font-size:10px;letter-spacing:.5px;}
+.menu-right{margin-left:auto;display:flex;align-items:center;padding:0 12px;gap:12px;}
+
+/* ===== LAYOUT ===== */
+#app{display:flex;height:calc(100vh - var(--toolbar-h));overflow:hidden;}
+
+/* ===== LEFT SIDEBAR ===== */
+#sidebar{
+  width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
+}
+#no-pack-msg{flex-shrink:0;}
+#category-list{overflow-y:auto;flex:1;}
+.sidebar-header{
+  padding:10px 12px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.sidebar-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text4);}
+.sidebar-btn{
+  background:none;border:1px solid var(--border2);color:var(--text3);
+  font-size:10px;padding:3px 8px;border-radius:2px;cursor:pointer;
+  font-family:'JetBrains Mono',monospace;letter-spacing:.5px;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.sidebar-btn:hover{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue);}
+
+#search-box{padding:8px;border-bottom:1px solid var(--border);}
+#search-input{
+  width:100%;background:#080a0d;border:1px solid var(--border2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:5px 8px;
+  border-radius:2px;outline:none;transition:border-color .15s;
+}
+#search-input::placeholder{color:var(--text4);}
+#search-input:focus{border-color:var(--blue-border);}
+
+.cat-group{margin-bottom:2px;}
+.cat-header{
+  padding:6px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--text4);cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+  transition:color .15s;
+}
+.cat-header:hover{color:var(--text2);}
+.cat-arrow{font-size:8px;transition:transform .2s;}
+.cat-group.open .cat-arrow{transform:rotate(90deg);}
+.cat-items{display:none;}
+.cat-group.open .cat-items{display:block;}
+.tex-item{
+  padding:5px 12px 5px 22px;font-size:11px;color:var(--text3);cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:background .1s,color .1s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tex-item:hover{background:rgba(255,255,255,.03);color:var(--text2);}
+.tex-item.active{background:var(--blue-dim);color:var(--blue);}
+.tex-thumb{width:16px;height:16px;image-rendering:pixelated;flex-shrink:0;border:1px solid rgba(255,255,255,.1);}
+
+#import-zone{border-top:1px solid var(--border);padding:10px;}
+#drop-area{
+  border:1px dashed var(--border3);border-radius:2px;padding:12px 8px;
+  text-align:center;cursor:pointer;transition:all .2s;
+}
+#drop-area:hover,#drop-area.drag-over{border-color:var(--blue-border);background:var(--blue-dim);}
+.drop-label{font-size:10px;color:var(--text4);line-height:1.6;}
+.drop-label b{color:var(--blue);display:block;font-size:11px;margin-bottom:2px;}
+#file-input{display:none;}
+
+/* ===== CANVAS AREA ===== */
+#canvas-area{flex:1;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;}
+#canvas-toolbar{
+  height:32px;background:#080a0e;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 12px;gap:4px;flex-shrink:0;
+}
+.tool-btn{
+  width:26px;height:26px;background:none;border:1px solid transparent;
+  color:var(--text3);font-size:13px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border-radius:2px;transition:all .15s;position:relative;
+}
+.tool-btn:hover{border-color:var(--border2);background:rgba(255,255,255,.04);color:var(--text);}
+.tool-btn.active{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue);}
+.tool-sep{width:1px;height:18px;background:var(--border);margin:0 4px;}
+.zoom-display{font-size:11px;color:var(--text3);padding:0 10px;letter-spacing:.5px;border-left:1px solid var(--border);margin-left:4px;}
+.canvas-info{margin-left:auto;font-size:10px;color:var(--text4);letter-spacing:.5px;}
+
+#canvas-viewport{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;cursor:crosshair;
+  background: repeating-conic-gradient(#111316 0% 25%, #0c0e11 0% 50%) 0 0 / 20px 20px;
+}
+#canvas-wrap{
+  position:relative;transform-origin:center center;
+  box-shadow:0 4px 32px rgba(0,0,0,.7);
+  will-change:transform;
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+}
+#pixel-canvas{
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+  display:block;cursor:crosshair;
+}
+#grid-overlay{
+  position:absolute;top:0;left:0;pointer-events:none;
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+}
+#welcome-msg{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:16px;pointer-events:none;
+}
+.welcome-title{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:rgb(0, 191, 255);letter-spacing:4px;}
+.welcome-sub{font-size:11px;color:var(--text4);letter-spacing:1px;}
+
+/* ===== RIGHT PANEL ===== */
+#panel{
+  width:var(--panel-r);background:var(--bg2);border-left:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;
+}
+.panel-section{border-bottom:1px solid var(--border);padding:12px;}
+.panel-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text4);margin-bottom:10px;}
+
+.color-row{display:flex;gap:6px;margin-bottom:8px;}
+.color-input-wrap{flex:1;display:flex;flex-direction:column;gap:3px;}
+.color-input-wrap label{font-size:9px;color:var(--text4);letter-spacing:.5px;}
+.color-input-wrap input{
+  background:#080a0d;border:1px solid var(--border2);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 6px;
+  width:100%;border-radius:2px;outline:none;
+}
+.color-input-wrap input:focus{border-color:var(--blue-border);}
+
+#swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:4px;}
+.swatch{aspect-ratio:1;border-radius:2px;cursor:pointer;border:1px solid rgba(255,255,255,.05);transition:transform .1s;}
+.swatch:hover{transform:scale(1.2);z-index:1;position:relative;}
+
+#palette-grid{display:grid;grid-template-columns:repeat(16,1fr);gap:2px;}
+.pal-cell{
+  aspect-ratio:1;border-radius:1px;cursor:pointer;
+  border:1px solid rgba(255,255,255,.05);transition:transform .1s,border-color .1s;
+}
+.pal-cell:hover{transform:scale(1.3);z-index:1;position:relative;border-color:rgba(255,255,255,.3);}
+.pal-cell.selected{border-color:white!important;transform:scale(1.2);z-index:1;}
+
+.info-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.info-label{font-size:10px;color:var(--text4);}
+.info-val{font-size:11px;color:var(--text2);}
+
+.setting-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.setting-row label{font-size:11px;color:var(--text3);width:60px;flex-shrink:0;}
+.setting-row input[type=range]{flex:1;accent-color:var(--accent);}
+.setting-val{font-size:11px;color:var(--text2);width:24px;text-align:right;}
+.setting-row input[type=checkbox]{accent-color:var(--accent);}
+
+.action-btn{
+  width:100%;padding:8px;background:var(--blue-dim);border:1px solid var(--blue-border);
+  color:var(--blue);font-family:'JetBrains Mono',monospace;font-size:11px;
+  letter-spacing:.5px;cursor:pointer;border-radius:2px;margin-bottom:6px;
+  transition:all .15s;
+}
+.action-btn:hover{background:rgba(0,180,255,.2);color:#fff;}
+.action-btn.secondary{background:transparent;border-color:var(--border2);color:var(--text3);}
+.action-btn.secondary:hover{background:rgba(255,255,255,.04);color:var(--text);}
+
+#statusbar{
+  height:22px;background:#070910;border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 12px;gap:16px;
+  font-size:10px;color:var(--text4);letter-spacing:.5px;flex-shrink:0;
+}
+.status-item{display:flex;align-items:center;gap:5px;}
+.status-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;}
+.status-dot.warn{background:var(--amber);}
+
+/* ===== MODALS ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:5000;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:#0d1017;border:1px solid var(--border2);width:420px;box-shadow:0 20px 60px rgba(0,0,0,.8);}
+.modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;}
+.modal-close{background:none;border:none;color:var(--text4);font-size:16px;cursor:pointer;padding:2px 6px;transition:color .15s;}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:16px;}
+.modal-footer{padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;}
+
+/* ===== GUIDE MODAL ===== */
+#modal-guide .modal{width:560px;max-height:90vh;display:flex;flex-direction:column;}
+#modal-guide .modal-body{overflow-y:auto;flex:1;padding:0;}
+.guide-step{display:none;flex-direction:column;height:100%;}
+.guide-step.active{display:flex;}
+.guide-hero{
+  padding:28px 24px 20px;text-align:center;
+  background:linear-gradient(160deg,rgba(0,180,255,.07) 0%,rgba(0,0,0,0) 60%);
+  border-bottom:1px solid var(--border);
+}
+.guide-icon{font-size:40px;margin-bottom:12px;line-height:1;}
+.guide-step-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--text);letter-spacing:1px;margin-bottom:6px;}
+.guide-step-sub{font-size:11px;color:var(--text3);line-height:1.7;max-width:400px;margin:0 auto;}
+.guide-body{padding:20px 24px;flex:1;}
+.guide-tip{
+  background:rgba(0,180,255,.06);border:1px solid rgba(0,180,255,.15);
+  border-radius:3px;padding:10px 14px;margin-bottom:12px;
+  font-size:11px;color:var(--text2);line-height:1.7;
+}
+.guide-tip b{color:var(--blue);}
+.guide-tip code{background:rgba(0,180,255,.1);padding:1px 5px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--blue);}
+.guide-shortcut-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.guide-sc{background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;}
+.guide-sc-label{font-size:10px;color:var(--text3);}
+.guide-sc-key{font-size:10px;background:var(--bg);border:1px solid var(--border2);padding:2px 6px;border-radius:2px;color:var(--blue);}
+.guide-progress{display:flex;align-items:center;gap:6px;padding:12px 24px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.guide-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);transition:background .2s;cursor:pointer;}
+.guide-dot.done{background:var(--green);}
+.guide-dot.current{background:var(--blue);}
+.guide-progress-label{margin-left:auto;font-size:10px;color:var(--text4);letter-spacing:.5px;}
+.guide-nav{padding:14px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;}
+.guide-skip{font-size:10px;color:var(--text4);cursor:pointer;margin-right:auto;letter-spacing:.5px;transition:color .15s;}
+.guide-skip:hover{color:var(--text2);}
+
+/* ===== PACK META MODAL ===== */
+.mc-color-editor{background:#080a0d;border:1px solid var(--border2);border-radius:2px;overflow:hidden;}
+.mc-color-preview{padding:10px 12px;min-height:36px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;border-bottom:1px solid var(--border);background:#050709;word-break:break-all;}
+.mc-color-toolbar{display:flex;align-items:center;gap:4px;padding:6px 8px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+.mc-btn{background:none;border:1px solid var(--border2);color:var(--text3);font-size:10px;padding:3px 7px;border-radius:2px;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .15s;}
+.mc-btn:hover{background:var(--blue-dim);border-color:var(--blue-border);color:var(--blue);}
+.mc-color-input-area{width:100%;background:transparent;border:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 12px;outline:none;resize:none;height:60px;line-height:1.6;}
+.mc-color-ref{padding:6px 10px;background:var(--bg3);border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:4px;}
+.mc-code-chip{font-size:10px;padding:2px 6px;border-radius:2px;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:'JetBrains Mono',monospace;transition:transform .1s;}
+.mc-code-chip:hover{transform:scale(1.05);}
+.form-row{margin-bottom:12px;}
+.form-row label{display:block;font-size:10px;color:var(--text4);letter-spacing:.5px;margin-bottom:4px;}
+.form-row select,.form-row input[type=text]{width:100%;background:#080a0d;border:1px solid var(--border2);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px 8px;border-radius:2px;outline:none;}
+.form-row select:focus,.form-row input[type=text]:focus{border-color:var(--blue-border);}
+
+/* ===== TOAST ===== */
+#toast{
+  position:fixed;bottom:30px;right:20px;z-index:9999;
+  background:#1a2030;border:1px solid var(--border2);padding:10px 16px;
+  font-size:11px;color:var(--text2);border-radius:2px;
+  transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none;
+}
+#toast.show{transform:translateY(0);opacity:1;}
+#toast.success{border-color:rgba(0,220,130,.3);color:var(--green);}
+#toast.warn{border-color:rgba(255,180,0,.3);color:var(--amber);}
+
+#progress-bar{position:fixed;top:36px;left:0;height:2px;background:var(--accent);width:0;transition:width .3s;z-index:1001;}
+
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:#2a3040;border-radius:2px;}
+::-webkit-scrollbar-thumb:hover{background:#3a4060;}
+
+select{background:#080a0d;border:1px solid var(--border2);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 6px;border-radius:2px;outline:none;cursor:pointer;}
+select:focus{border-color:var(--blue-border);}
+.tex-thumb{image-rendering:pixelated;}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<!-- Menu Bar -->
+<div id="menubar">
+<div class="menu-logo"><img src="./logo.png" style="height:20px;width:20px;object-fit:contain;image-rendering:pixelated;"> MCDESIGN <span>v0.1.0</span></div>
+  <div class="menu-items">
+    <div class="menu-item" data-menu="file">File
+      <div class="dropdown" id="menu-file">
+        <div class="dropdown-item" onclick="triggerImport()">Import Texture Pack (ZIP / JAR)<span class="shortcut">Ctrl+O</span></div>
+        <div class="dropdown-item" onclick="newTexture()">New Texture…<span class="shortcut">Ctrl+N</span></div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-item" onclick="saveCurrentTexture()">Save Texture<span class="shortcut">Ctrl+S</span></div>
+        <div class="dropdown-item" onclick="exportAsPNG()">Export as PNG<span class="shortcut">Ctrl+E</span></div>
+        <div class="dropdown-item" onclick="exportAll()">Export All Modified…</div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-item" onclick="showExportPackModal()">Export Pack as ZIP<span class="shortcut">Ctrl+Shift+S</span></div>
+      </div>
+    </div>
+    <div class="menu-item" data-menu="edit">Edit
+      <div class="dropdown" id="menu-edit">
+        <div class="dropdown-item" onclick="undoAction()">Undo<span class="shortcut">Ctrl+Z</span></div>
+        <div class="dropdown-item" onclick="redoAction()">Redo<span class="shortcut">Ctrl+Y</span></div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-item" onclick="fillAll()">Fill Canvas</div>
+        <div class="dropdown-item" onclick="clearCanvas()">Clear Canvas</div>
+        <div class="dropdown-item" onclick="flipH()">Flip Horizontal</div>
+        <div class="dropdown-item" onclick="flipV()">Flip Vertical</div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-item" onclick="copyPixels()">Copy<span class="shortcut">Ctrl+C</span></div>
+        <div class="dropdown-item" onclick="pastePixels()">Paste<span class="shortcut">Ctrl+V</span></div>
+      </div>
+    </div>
+    <div class="menu-item" data-menu="view">View
+      <div class="dropdown" id="menu-view">
+        <div class="dropdown-item" onclick="setZoom(1)">100%<span class="shortcut">1</span></div>
+        <div class="dropdown-item" onclick="setZoom(2)">200%<span class="shortcut">2</span></div>
+        <div class="dropdown-item" onclick="setZoom(4)">400%<span class="shortcut">3</span></div>
+        <div class="dropdown-item" onclick="setZoom(8)">800%<span class="shortcut">4</span></div>
+        <div class="dropdown-item" onclick="setZoom(16)">1600%<span class="shortcut">5</span></div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-item" onclick="toggleGrid()">Toggle Grid<span class="shortcut">G</span></div>
+        <div class="dropdown-item" onclick="fitToScreen()">Fit to Screen<span class="shortcut">F</span></div>
+      </div>
+    </div>
+    <div class="menu-item" data-menu="texture">Texture
+      <div class="dropdown" id="menu-texture">
+        <div class="dropdown-item" onclick="showTexInfo()">Texture Info</div>
+        <div class="dropdown-item" onclick="generateMCPalette()">Load MC Default Palette</div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-item" onclick="resize16()">Resize to 16×16</div>
+        <div class="dropdown-item" onclick="resize32()">Resize to 32×32</div>
+        <div class="dropdown-item" onclick="resize64()">Resize to 64×64</div>
+      </div>
+    </div>
+    <div class="menu-item" data-menu="help">Help
+      <div class="dropdown" id="menu-help">
+        <div class="dropdown-item" onclick="showAbout()">About MCDesign</div>
+        <div class="dropdown-item" onclick="showShortcuts()">Keyboard Shortcuts</div>
+        <div class="dropdown-item" onclick="showGuide()">Getting Started Guide</div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-item" onclick="showPackFormat()">Pack Format Info</div>
+        <div class="dropdown-sep"></div>
+        <div class="dropdown-item disabled">Version 0.1 — Alpha Build</div>
+      </div>
+    </div>
+  </div>
+  <div class="menu-right"><div class="menu-right">
+  <button onclick="toggleLightMode()" id="theme-btn" style="background:none;border:1px solid var(--border2);color:var(--text3);padding:3px 10px;border-radius:2px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.5px;transition:all .15s;" title="Toggle light/dark mode">
+    <i class="fa-solid fa-sun" id="theme-icon"></i>
+  </button>
+</div></div>
+</div>
+
+<!-- Main App -->
+<div id="app">
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Textures</span>
+      <button class="sidebar-btn" onclick="triggerImport()">Import ZIP or JAR</button>
+    </div>
+    <div id="search-box">
+      <input type="text" id="search-input" placeholder="Search textures…" oninput="filterTextures(this.value)">
+    </div>
+    <div id="no-pack-msg" style="padding:20px 12px;text-align:center;">
+      <div style="font-size:10px;color:var(--text4);line-height:1.8;letter-spacing:.5px;">No texture pack loaded.<br>Import a ZIP, or JAR to begin.</div>
+      <div style="margin-top:12px;font-size:18px;opacity:.2;">📦</div>
+    </div>
+    <div id="category-list"></div>
+    <div id="import-zone">
+      <div id="drop-area" onclick="triggerImport()" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="handleDrop(event)">
+        <label class="drop-label"><b>DROP ZIP OR JAR HERE</b>or click to browse</label>
+      </div>
+      <input type="file" id="file-input" accept=".zip,.jar" onchange="handleFileInput(this)">
+    </div>
+  </div>
+
+  <!-- Canvas Area -->
+  <div id="canvas-area">
+    <div id="canvas-toolbar">
+<button class="tool-btn active" id="tool-pencil" title="Pencil (P)" onclick="setTool('pencil')"><i class="fa-solid fa-pencil"></i></button>
+<button class="tool-btn" id="tool-eraser" title="Eraser (E)" onclick="setTool('eraser')"><i class="fa-solid fa-eraser"></i></button>
+<button class="tool-btn" id="tool-fill" title="Fill (F)" onclick="setTool('fill')"><i class="fa-solid fa-fill-drip"></i></button>
+<button class="tool-btn" id="tool-eyedrop" title="Eyedropper (I)" onclick="setTool('eyedrop')"><i class="fa-solid fa-eye-dropper"></i></button>
+<button class="tool-btn" id="tool-select" title="Select (S)" onclick="setTool('select')"><i class="fa-regular fa-square"></i></button>
+<button class="tool-btn" id="tool-line" title="Line (L)" onclick="setTool('line')"><i class="fa-solid fa-minus fa-rotate-by" style="--fa-rotate-angle:-45deg;"></i></button>
+<div class="tool-sep"></div>
+<button class="tool-btn" id="tool-zoom-in" title="Zoom In (+)" onclick="zoomIn()"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+<button class="tool-btn" id="tool-zoom-out" title="Zoom Out (-)" onclick="zoomOut()"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+<span class="zoom-display" id="zoom-label">800%</span>
+<div class="tool-sep"></div>
+<button class="tool-btn" id="tool-grid" title="Toggle Grid (G)" onclick="toggleGrid()" style="font-size:9px;">GRID</button>
+<button class="tool-btn" title="Undo (Ctrl+Z)" onclick="undoAction()"><i class="fa-solid fa-rotate-left"></i></button>
+<button class="tool-btn" title="Redo (Ctrl+Y)" onclick="redoAction()"><i class="fa-solid fa-rotate-right"></i></button>
+      <div class="canvas-info" id="canvas-info">No texture open</div>
+    </div>
+
+    <div id="canvas-viewport"
+      onmousedown="canvasMouseDown(event)"
+      onmousemove="canvasMouseMove(event)"
+      onmouseup="canvasMouseUp(event)"
+      onmouseleave="canvasMouseUp(event)"
+      onwheel="canvasWheel(event)"
+      oncontextmenu="return false">
+      <div id="canvas-wrap">
+        <canvas id="pixel-canvas"></canvas>
+        <canvas id="grid-overlay"></canvas>
+      </div>
+      <div id="welcome-msg">
+<img src="./logo.png" style="width:48px;height:48px;object-fit:contain;image-rendering:pixelated;margin-bottom:8px;">
+<div class="welcome-title">MCDESIGN</div>
+        <div class="welcome-sub">Import a texture pack or open a texture to begin editing</div>
+      </div>
+    </div>
+
+    <div id="statusbar">
+      <div class="status-item"><div class="status-dot" id="status-dot"></div><span id="status-text">Ready</span></div>
+      <div class="status-item" id="pos-display">—</div>
+      <div class="status-item" id="color-display-status">—</div>
+      <div style="margin-left:auto;" id="modified-count">0 modified</div>
+    </div>
+  </div>
+
+  <!-- Right Panel -->
+  <div id="panel">
+    <div class="panel-section">
+      <div class="panel-label">Color</div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <div style="flex:1;">
+          <div style="font-size:9px;color:var(--text4);margin-bottom:3px;letter-spacing:.5px;">FOREGROUND</div>
+          <input type="color" id="fg-color" value="#7dd4f0" style="width:100%;height:32px;border:1px solid var(--border2);background:none;cursor:pointer;padding:2px;border-radius:2px;">
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:9px;color:var(--text4);margin-bottom:3px;letter-spacing:.5px;">BACKGROUND</div>
+          <input type="color" id="bg-color" value="#000000" style="width:100%;height:32px;border:1px solid var(--border2);background:none;cursor:pointer;padding:2px;border-radius:2px;">
+        </div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:2px;">
+          <button onclick="swapColors()" style="background:none;border:1px solid var(--border2);color:var(--text3);width:26px;height:32px;cursor:pointer;border-radius:2px;font-size:12px;" title="Swap colors"><i class="fa-solid fa-arrow-right-arrow-left"></i></button>
+        </div>
+      </div>
+      <div class="color-row">
+        <div class="color-input-wrap">
+          <label>HEX</label>
+          <input type="text" id="hex-input" value="#7dd4f0" oninput="hexChanged(this.value)">
+        </div>
+        <div class="color-input-wrap">
+          <label>ALPHA</label>
+          <input type="number" id="alpha-input" value="255" min="0" max="255" oninput="alphaChanged(this.value)">
+        </div>
+      </div>
+      <div id="swatches"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Brush</div>
+      <div class="setting-row">
+        <label>Size</label>
+        <input type="range" min="1" max="8" value="1" id="brush-size" oninput="document.getElementById('brush-sz-val').textContent=this.value">
+        <span class="setting-val" id="brush-sz-val">1</span>
+      </div>
+      <div class="setting-row">
+        <label>Opacity</label>
+        <input type="range" min="1" max="100" value="100" id="brush-opacity" oninput="document.getElementById('brush-op-val').textContent=this.value+'%'">
+        <span class="setting-val" id="brush-op-val">100%</span>
+      </div>
+      <div class="setting-row">
+        <label>Dither</label>
+        <input type="checkbox" id="dither-mode">
+        <span style="font-size:11px;color:var(--text3)">Enable</span>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Palette</span>
+        <div style="display:flex;gap:4px;">
+          <button class="sidebar-btn" onclick="loadMCPalette()" title="Load Minecraft palette">MC</button>
+          <button class="sidebar-btn" onclick="addColorToPalette()" title="Add current color">+</button>
+        </div>
+      </div>
+      <div id="palette-grid"></div>
+    </div>
+
+    <div class="panel-section" id="tex-info-panel">
+      <div class="panel-label">Texture Info</div>
+      <div class="info-row"><span class="info-label">Name</span><span class="info-val" id="info-name">—</span></div>
+      <div class="info-row"><span class="info-label">Size</span><span class="info-val" id="info-size">—</span></div>
+      <div class="info-row"><span class="info-label">Category</span><span class="info-val" id="info-cat">—</span></div>
+      <div class="info-row"><span class="info-label">Modified</span><span class="info-val" id="info-modified">No</span></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-label">Actions</div>
+<button class="action-btn" onclick="saveCurrentTexture()"><i class="fa-solid fa-floppy-disk"></i> Save Texture</button>
+<button class="action-btn" onclick="exportAsPNG()"><i class="fa-solid fa-file-export"></i> Export PNG</button>
+<button class="action-btn secondary" onclick="revertTexture()"><i class="fa-solid fa-rotate-left"></i> Revert</button>
+<button class="action-btn secondary" onclick="showExportPackModal()"><i class="fa-solid fa-box-archive"></i> Export Pack ZIP</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- GUIDE MODAL -->
+<div class="modal-overlay" id="modal-guide">
+  <div class="modal" style="width:560px;max-height:88vh;display:flex;flex-direction:column;">
+    <div class="modal-header">
+      <span class="modal-title">Getting Started</span>
+      <button class="modal-close" onclick="closeGuide()">✕</button>
+    </div>
+    <div class="guide-step active" id="guide-step-1">
+      <div class="guide-hero"><div class="guide-icon">⬛</div><div class="guide-step-title">Welcome to MCDesign</div><div class="guide-step-sub">A simple, fast, and efficient browser-based pixel editor for Minecraft that requires ZERO downloads or installations, and is very powerful.</div></div>
+      <div class="guide-body">
+        <div class="guide-tip"><b>How do I get started?</b><br>To get started with MCDesign, simply import a JAR file, or ZIP file of the game's assets into MCDesign, and it will handle importing them all for you, just sit back while MCDesign imports them! After importing, MCDesign will sort the textures into sections, making organization easier. You can now create your textures with ease! Ready to export? MCDesign will help you there too! Just select the game version the pack is for, and customize its pack.mcmeta file, and export!</div>
+        <div class="guide-tip"><b>What you'll learn:</b><br>① How to import a texture pack<br>② How to use the drawing tools<br>③ How to export your finished pack</div>
+      </div>
+    </div>
+    <div class="guide-step" id="guide-step-2">
+      <div class="guide-hero"><div class="guide-icon">📦</div><div class="guide-step-title">Importing a Texture Pack</div><div class="guide-step-sub">Load any resource pack ZIP to start editing.</div></div>
+      <div class="guide-body">
+        <div class="guide-tip"><b>Option A — Import a JAR file or ZIP file:</b><br>Click <code>File → Import Texture Pack (ZIP / JAR)</code> or drag-and-drop a ZIP, or JAR onto the drop zone.</div>
+        <div class="guide-tip"><b>Option B — New Texture:</b><br>Use <code>File → New Texture…</code> to create a blank canvas. 16×16 is standard for most Minecraft blocks.</div>
+      </div>
+    </div>
+    <div class="guide-step" id="guide-step-3">
+      <div class="guide-hero"><div class="guide-icon">🖥</div><div class="guide-step-title">The Interface</div><div class="guide-step-sub">Three panels, one canvas.</div></div>
+      <div class="guide-body">
+        <div class="guide-tip"><b>Left Panel — Texture Browser:</b><br>Browse all textures organized by category. Click any texture to open it.</div>
+        <div class="guide-tip"><b>Center — Canvas:</b><br>Your editing area. Scroll or use +/- to zoom. Press F to fit to screen.</div>
+        <div class="guide-tip"><b>Right Panel — Color &amp; Settings:</b><br>Pick colors, adjust brush, and use the Minecraft palette.</div>
+      </div>
+    </div>
+    <div class="guide-step" id="guide-step-4">
+      <div class="guide-hero"><div class="guide-icon">✏️</div><div class="guide-step-title">Drawing Tools &amp; Shortcuts</div><div class="guide-step-sub">Every tool has a keyboard shortcut.</div></div>
+      <div class="guide-body">
+        <div class="guide-shortcut-grid">
+          <div class="guide-sc"><span class="guide-sc-label">✏ Pencil</span><span class="guide-sc-key">P</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">◻ Eraser</span><span class="guide-sc-key">E</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">⬛ Fill Bucket</span><span class="guide-sc-key">B</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">💉 Eyedropper</span><span class="guide-sc-key">I</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">╱ Line Tool</span><span class="guide-sc-key">L</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">⇄ Swap Colors</span><span class="guide-sc-key">X</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">↺ Undo</span><span class="guide-sc-key">Ctrl+Z</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">↻ Redo</span><span class="guide-sc-key">Ctrl+Y</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">Grid Toggle</span><span class="guide-sc-key">G</span></div>
+          <div class="guide-sc"><span class="guide-sc-label">Fit to Screen</span><span class="guide-sc-key">F</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="guide-step" id="guide-step-5">
+      <div class="guide-hero"><div class="guide-icon">📤</div><div class="guide-step-title">Exporting Your Pack</div><div class="guide-step-sub">Export a complete resource pack ZIP ready to drop into Minecraft.</div></div>
+      <div class="guide-body">
+        <div class="guide-tip"><b>Export as ZIP:</b><br>Use <code>File → Export Pack as ZIP</code>. MCDesign will generate a <code>pack.mcmeta</code> file for you.</div>
+        <div class="guide-tip"><b>Save individual textures:</b><br>Use <code>Ctrl+S</code> to save the current texture, or <code>Ctrl+E</code> to export as a standalone PNG.</div>
+      </div>
+    </div>
+    <div class="guide-step" id="guide-step-6">
+      <div class="guide-hero"><div class="guide-icon">🎉</div><div class="guide-step-title">You're Ready to Go!</div><div class="guide-step-sub">Happy crafting!</div></div>
+      <div class="guide-body">
+        <div class="guide-tip"><b>Quick start checklist:</b><br>☐ Import a resource pack ZIP or JAR<br>☐ Click a texture in the left panel<br>☐ Edit with the pencil tool<br>☐ Export your pack when done</div>
+        <div class="guide-tip"><b>Need help later?</b><br>Reopen this guide from <code>Help → Getting Started Guide</code>.</div>
+      </div>
+    </div>
+    <div class="guide-progress" id="guide-progress-bar-dots">
+      <div class="guide-dot current" onclick="goToStep(1)" id="gdot-1"></div>
+      <div class="guide-dot" onclick="goToStep(2)" id="gdot-2"></div>
+      <div class="guide-dot" onclick="goToStep(3)" id="gdot-3"></div>
+      <div class="guide-dot" onclick="goToStep(4)" id="gdot-4"></div>
+      <div class="guide-dot" onclick="goToStep(5)" id="gdot-5"></div>
+      <div class="guide-dot" onclick="goToStep(6)" id="gdot-6"></div>
+      <span class="guide-progress-label" id="guide-progress-label">Step 1 of 6</span>
+    </div>
+    <div class="guide-nav">
+      <span class="guide-skip" onclick="closeGuide()">Skip guide</span>
+      <button class="action-btn secondary" id="guide-prev-btn" onclick="guideNav(-1)" style="width:auto;padding:6px 18px;margin:0;display:none;">← Back</button>
+      <button class="action-btn" id="guide-next-btn" onclick="guideNav(1)" style="width:auto;padding:6px 18px;margin:0;">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PACK META MODAL -->
+<div class="modal-overlay" id="modal-packmeta">
+  <div class="modal" style="width:500px;">
+    <div class="modal-header">
+      <span class="modal-title">Export Pack as ZIP</span>
+      <button class="modal-close" onclick="closeModal('modal-packmeta')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.7;">MCDesign will generate a <code style="background:var(--bg3);padding:1px 5px;border-radius:2px;font-size:10px;color:var(--blue);">pack.mcmeta</code> file for you.</div>
+      <div class="form-row">
+        <label>MINECRAFT VERSION (pack_format)</label>
+        <select id="meta-packformat">
+          <option value="84">26.1-26.1.2 — pack_format 84</option>
+          <option value="75">1.21.11 — pack_format 75</option>
+          <option value="69">1.21.9-1.21.10 — pack_format 69</option>
+          <option value="64">1.21.7-1.21.8 — pack_format 64</option>
+          <option value="63">1.21.6 — pack_format 63</option>
+          <option value="55">1.21.5 — pack_format 55</option>
+          <option value="46">1.21.4 — pack_format 46</option>
+          <option value="42">1.21.2-1.21.3 — pack_format 42</option>
+          <option value="34">1.21-1.21.1 — pack_format 34</option>
+          <option value="32">1.20.5-1.20.6 — pack_format 32</option>
+          <option value="22">1.20.3-1.20.4 — pack_format 22</option>
+          <option value="18">1.20.2 — pack_format 18</option>
+          <option value="15">1.20-1.20.1 — pack_format 15</option>
+          <option value="13">1.19.4 — pack_format 13</option>
+          <option value="12">1.19.3 — pack_format 12</option>
+          <option value="9">1.19-1.19.2 — pack_format 9</option>
+          <option value="8">1.18–1.18.2 — pack_format 8</option>
+          <option value="7">1.17-1.17.1 — pack_format 7</option>
+          <option value="6">1.16.2-1.16.5 — pack_format 6</option>
+          <option value="5">1.15-1.16.1 — pack_format 5</option>
+          <option value="4">1.13-1.14.4 — pack_format 4</option>
+          <option value="3">1.11-1.12.2 — pack_format 3</option>
+          <option value="2">1.9-1.10.2 — pack_format 2</option>
+          <option value="1">1.6.1-1.8.9 — pack_format 1</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>PACK DESCRIPTION — supports §color codes</label>
+        <div class="mc-color-editor">
+          <div class="mc-color-preview" id="mc-preview">My Resource Pack</div>
+          <div class="mc-color-toolbar"></div>
+          <div class="mc-color-ref" id="mc-code-chips"></div>
+          <textarea class="mc-color-input-area" id="meta-desc" placeholder="My Resource Pack" oninput="updateMCPreview()">My Resource Pack</textarea>
+        </div>
+        <div style="font-size:9px;color:var(--text4);margin-top:4px;">Use §0–§9, §a–§f for colors. §l bold · §o italic · §r reset</div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:2px;padding:10px 12px;font-size:10px;color:var(--text4);line-height:1.7;">
+        <b style="color:var(--text3);">Generated pack.mcmeta preview:</b><br>
+        <span id="meta-json-preview" style="color:var(--text3);font-family:'JetBrains Mono',monospace;font-size:10px;"></span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn secondary" onclick="closeModal('modal-packmeta')" style="width:auto;padding:6px 20px;margin:0;">Cancel</button>
+      <button class="action-btn" onclick="exportPack()" style="width:auto;padding:6px 20px;margin:0;">📦 Export ZIP</button>
+    </div>
+  </div>
+</div>
+
+<!-- About Modal -->
+<div class="modal-overlay" id="modal-about">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">About MCDesign</span><button class="modal-close" onclick="closeModal('modal-about')">✕</button></div>
+    <div class="modal-body">
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;color:var(--blue);letter-spacing:4px;">MCDESIGN</div>
+        <div style="font-size:12px;color:var(--text4);letter-spacing:2px;margin-top:4px;">VERSION 0.1</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);line-height:1.8;">A browser-based Minecraft texture editor. Import a texture pack ZIP, edit any texture with pixel-perfect tools, and export your modified pack.</div>
+    </div>
+    <div class="modal-footer"><button class="action-btn" onclick="closeModal('modal-about')" style="width:auto;padding:6px 20px;">Close</button></div>
+  </div>
+</div>
+
+<!-- Shortcuts Modal -->
+<div class="modal-overlay" id="modal-shortcuts">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Keyboard Shortcuts</span><button class="modal-close" onclick="closeModal('modal-shortcuts')">✕</button></div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;">
+        <div style="color:var(--text4);">Pencil</div><div style="color:var(--text2);">P</div>
+        <div style="color:var(--text4);">Eraser</div><div style="color:var(--text2);">E</div>
+        <div style="color:var(--text4);">Fill</div><div style="color:var(--text2);">B</div>
+        <div style="color:var(--text4);">Eyedropper</div><div style="color:var(--text2);">I</div>
+        <div style="color:var(--text4);">Select</div><div style="color:var(--text2);">S</div>
+        <div style="color:var(--text4);">Toggle Grid</div><div style="color:var(--text2);">G</div>
+        <div style="color:var(--text4);">Fit to Screen</div><div style="color:var(--text2);">F</div>
+        <div style="color:var(--text4);">Zoom In</div><div style="color:var(--text2);">= / Scroll Up</div>
+        <div style="color:var(--text4);">Zoom Out</div><div style="color:var(--text2);">- / Scroll Down</div>
+        <div style="color:var(--text4);">Undo</div><div style="color:var(--text2);">Ctrl+Z</div>
+        <div style="color:var(--text4);">Redo</div><div style="color:var(--text2);">Ctrl+Y</div>
+        <div style="color:var(--text4);">Save</div><div style="color:var(--text2);">Ctrl+S</div>
+        <div style="color:var(--text4);">Export PNG</div><div style="color:var(--text2);">Ctrl+E</div>
+        <div style="color:var(--text4);">Open Pack</div><div style="color:var(--text2);">Ctrl+O</div>
+        <div style="color:var(--text4);">Swap Colors</div><div style="color:var(--text2);">X</div>
+        <div style="color:var(--text4);">Fill Canvas</div><div style="color:var(--text2);">Ctrl+F</div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="action-btn" onclick="closeModal('modal-shortcuts')" style="width:auto;padding:6px 20px;">Close</button></div>
+  </div>
+</div>
+
+<!-- New Texture Modal -->
+<div class="modal-overlay" id="modal-new">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">New Texture</span><button class="modal-close" onclick="closeModal('modal-new')">✕</button></div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--text4);margin-bottom:4px;letter-spacing:.5px;">NAME</div>
+        <input type="text" id="new-name" value="new_texture" style="width:100%;background:#080a0d;border:1px solid var(--border2);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 8px;border-radius:2px;outline:none;">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:10px;color:var(--text4);margin-bottom:4px;letter-spacing:.5px;">WIDTH</div>
+          <select id="new-w" style="width:100%;"><option value="16" selected>16</option><option value="32">32</option><option value="64">64</option><option value="128">128</option></select>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text4);margin-bottom:4px;letter-spacing:.5px;">HEIGHT</div>
+          <select id="new-h" style="width:100%;"><option value="16" selected>16</option><option value="32">32</option><option value="64">64</option><option value="128">128</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="action-btn secondary" onclick="closeModal('modal-new')" style="width:auto;padding:6px 20px;">Cancel</button>
+      <button class="action-btn" onclick="createNewTexture()" style="width:auto;padding:6px 20px;">Create</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==============================
+// STATE
+// ==============================
+let texturePack = {};
+let currentTexPath = null;
+let zoom = 8;
+let tool = 'pencil';
+let isDrawing = false;
+let lastPx = null;
+let gridVisible = true;
+let undoStack = [];
+let redoStack = [];
+let clipboard = null;
+let modifiedPaths = new Set();
+let fgColor = '#7dd4f0';
+let alpha = 255;
+
+const canvas = document.getElementById('pixel-canvas');
+const ctx = canvas.getContext('2d', {willReadFrequently: true});
+const gridCanvas = document.getElementById('grid-overlay');
+const gridCtx = gridCanvas.getContext('2d');
+
+// ==============================
+// MINECRAFT CATEGORIES
+// ==============================
+const MC_CATEGORIES = {
+  'Block': ['block', 'blocks'],
+  'Item': ['item', 'items'],
+  'Entity': ['entity', 'entities'],
+  'GUI': ['gui'],
+  'Environment': ['environment', 'environment/'],
+  'Effect': ['effect', 'mob_effect'],
+  'Particle': ['particle'],
+  'Painting': ['painting'],
+  'Model': ['model'],
+  'Font': ['font'],
+  'Map': ['map'],
+  'Misc': []
+};
+
+function getCategoryForPath(p) {
+  const lower = p.toLowerCase();
+  for (const [cat, keys] of Object.entries(MC_CATEGORIES)) {
+    if (cat === 'Misc') continue;
+    for (const k of keys) {
+      if (lower.includes('/'+k+'/') || lower.includes('/'+k)) return cat;
+    }
+  }
+  return 'Misc';
+}
+
+// ==============================
+// MINECRAFT DEFAULT PALETTE
+// ==============================
+const MC_PALETTE = [
+  '#ffffff','#d4d4d4','#aaaaaa','#888888','#555555','#333333','#1a1a1a','#000000',
+  '#fc3c3c','#e01c1c','#ff7f0e','#e86a00','#fcfc3c','#c8c800','#7dfc7d','#3cbc3c',
+  '#3cfc3c','#14a014','#3cff9f','#00c87d','#3cdffc','#00a8c8','#3c7dfc','#1450c8',
+  '#7d3cfc','#5000c8','#fc3cff','#c800c8','#fc3ca0','#c80064','#8b4513','#5a2d0c',
+  '#f0a060','#d48040','#ffd700','#c8a000','#90ee90','#50c050','#006400','#004820',
+  '#4169e1','#1040c0','#00008b','#000060','#9370db','#6040a0','#ff69b4','#c04080',
+  '#a0522d','#7b3f1f','#c4a882','#a08060','#708090','#506070','#b8860b','#907000',
+  '#ff4500','#cc3000','#2e8b57','#1a6040','#191970','#0f0f50','#8fbc8f','#608060',
+];
+
+// ==============================
+// PALETTE UI
+// ==============================
+let palette = [...MC_PALETTE.slice(0,64)];
+let selectedPalIdx = 0;
+
+function renderPalette() {
+  const grid = document.getElementById('palette-grid');
+  grid.innerHTML = '';
+  palette.forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'pal-cell' + (i === selectedPalIdx ? ' selected' : '');
+    d.style.background = c;
+    d.title = c;
+    d.onclick = () => { selectedPalIdx = i; fgColor = c; syncColorUI(); renderPalette(); };
+    grid.appendChild(d);
+  });
+}
+
+function loadMCPalette() {
+  palette = [...MC_PALETTE.slice(0,64)];
+  selectedPalIdx = 0;
+  renderPalette();
+  toast('Minecraft palette loaded', 'success');
+}
+
+function addColorToPalette() {
+  if (palette.length >= 128) { toast('Palette full (128 colors max)', 'warn'); return; }
+  palette.push(fgColor);
+  renderPalette();
+}
+
+// ==============================
+// SWATCHES
+// ==============================
+let recentColors = ['#7dd4f0','#68edb0','#ffd470','#ff8b98','#000000','#ffffff','#888888','#444444'];
+
+function renderSwatches() {
+  const sw = document.getElementById('swatches');
+  sw.innerHTML = '';
+  recentColors.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'swatch';
+    d.style.background = c;
+    d.title = c;
+    d.onclick = () => { fgColor = c; syncColorUI(); };
+    sw.appendChild(d);
+  });
+}
+
+function addToRecent(c) {
+  recentColors = recentColors.filter(x => x !== c);
+  recentColors.unshift(c);
+  if (recentColors.length > 16) recentColors.pop();
+  renderSwatches();
+}
+
+// ==============================
+// COLOR SYNC
+// ==============================
+function syncColorUI() {
+  document.getElementById('fg-color').value = fgColor;
+  document.getElementById('hex-input').value = fgColor;
+}
+
+document.getElementById('fg-color').addEventListener('input', e => {
+  fgColor = e.target.value;
+  document.getElementById('hex-input').value = fgColor;
+});
+
+function hexChanged(v) {
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+    fgColor = v;
+    document.getElementById('fg-color').value = v;
+  }
+}
+
+function alphaChanged(v) { alpha = Math.max(0, Math.min(255, parseInt(v)||255)); }
+
+function swapColors() {
+  const fg = document.getElementById('fg-color').value;
+  const bg = document.getElementById('bg-color').value;
+  document.getElementById('fg-color').value = bg;
+  document.getElementById('bg-color').value = fg;
+  fgColor = bg;
+  syncColorUI();
+}
+
+// ==============================
+// MENU
+// ==============================
+document.querySelectorAll('.menu-item').forEach(mi => {
+  mi.addEventListener('click', e => {
+    e.stopPropagation();
+    const wasActive = mi.classList.contains('active');
+    document.querySelectorAll('.menu-item').forEach(x => x.classList.remove('active'));
+    if (!wasActive) mi.classList.add('active');
+  });
+});
+document.addEventListener('click', () => document.querySelectorAll('.menu-item').forEach(x => x.classList.remove('active')));
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function showAbout() { closeAllMenus(); document.getElementById('modal-about').classList.add('show'); }
+function showShortcuts() { closeAllMenus(); document.getElementById('modal-shortcuts').classList.add('show'); }
+function closeAllMenus() { document.querySelectorAll('.menu-item').forEach(x => x.classList.remove('active')); }
+function newTexture() { closeAllMenus(); document.getElementById('modal-new').classList.add('show'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
+});
+
+function toggleLightMode() {
+  const isLight = document.body.classList.toggle('light-mode');
+  document.getElementById('theme-icon').className = isLight ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+  try { localStorage.setItem('mcdesign_theme', isLight ? 'light' : 'dark'); } catch(e) {}
+}
+
+// Restore saved preference on load
+(function() {
+  try {
+    if (localStorage.getItem('mcdesign_theme') === 'light') {
+      document.body.classList.add('light-mode');
+      document.getElementById('theme-icon').className = 'fa-solid fa-moon';
+    }
+  } catch(e) {}
+})();
+
+// ==============================
+// TOAST
+// ==============================
+let toastTimer;
+function toast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', 2500);
+}
+
+// ==============================
+// PROGRESS
+// ==============================
+function setProgress(pct) {
+  const bar = document.getElementById('progress-bar');
+  bar.style.width = pct + '%';
+  if (pct >= 100) setTimeout(() => bar.style.width = '0', 400);
+}
+
+// ==============================
+// ZIP IMPORT
+// ==============================
+function triggerImport() {
+  closeAllMenus();
+  document.getElementById('file-input').click();
+}
+
+function dragOver(e) { e.preventDefault(); document.getElementById('drop-area').classList.add('drag-over'); }
+function dragLeave() { document.getElementById('drop-area').classList.remove('drag-over'); }
+function handleDrop(e) {
+  e.preventDefault();
+  dragLeave();
+  const file = e.dataTransfer.files[0];
+  if (file && (file.name.endsWith('.zip') || file.name.endsWith('.jar'))) loadZip(file);
+  else toast('Please drop a ZIP or JAR file', 'warn');
+}
+function handleFileInput(el) {
+  if (el.files[0]) loadZip(el.files[0]);
+  el.value = '';
+}
+
+async function loadZip(file) {
+  setStatus('Loading texture pack…', 'warn');
+  setProgress(5);
+
+  // ── FIX 1: reset state so no stale path survives into the new pack ──
+  currentTexPath = null;
+  texturePack = {};
+  modifiedPaths.clear();
+  undoStack = [];
+  redoStack = [];
+  document.getElementById('canvas-wrap').style.display = 'none';
+  document.getElementById('welcome-msg').style.display = '';
+
+  try {
+    const zip = await JSZip.loadAsync(file);
+    const files = Object.keys(zip.files).filter(n => !zip.files[n].dir && n.endsWith('.png'));
+    const isJar = file.name.endsWith('.jar');
+    const texFiles = isJar
+    ? files.filter(n => n.startsWith('assets/minecraft/textures/'))
+    : files;
+    const total = texFiles.length;
+    let done = 0;
+
+const loadBatch = async (batch) => {
+  for (const rawPath of batch) {
+    try {
+      // For JARs, strip the assets/minecraft/textures/ prefix so paths
+      // look like  textures/block/stone.png  →  block/stone.png
+      const path = isJar
+        ? rawPath.replace('assets/minecraft/textures/', '')
+        : rawPath;
+
+      const blob = await zip.files[rawPath].async('blob');
+      // ... rest unchanged, just use `path` instead of the old variable name
+          const imgData = await blobToImageData(blob);
+          const name = path.split('/').pop().replace('.png','');
+          const category = getCategoryForPath(path);
+          texturePack[path] = { data: copyImageData(imgData), original: copyImageData(imgData), modified: false, name, category, path };
+        } catch(e) { /* skip corrupt PNGs */ }
+        done++;
+        if (done % 20 === 0) setProgress(5 + (done/total)*90);
+      }
+    };
+
+    const batchSize = 50;
+    for (let i = 0; i < texFiles.length; i += batchSize) {
+      await loadBatch(texFiles.slice(i, i+batchSize));
+      await new Promise(r => setTimeout(r, 0));
+    }
+
+    setProgress(100);
+    buildSidebar();
+    setStatus(`Pack loaded: ${total} textures`, '');
+    toast(`Loaded ${total} textures from ${file.name}`, 'success');
+  } catch(e) {
+    console.error(e);
+    toast('Failed to load ZIP: ' + e.message, 'warn');
+    setStatus('Load failed', 'warn');
+  }
+}
+
+function blobToImageData(blob) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width; c.height = img.height;
+      c.getContext('2d').drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      res(c.getContext('2d').getImageData(0,0,c.width,c.height));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('img load fail')); };
+    img.src = url;
+  });
+}
+
+function copyImageData(id) {
+  const c = document.createElement('canvas');
+  c.width = id.width; c.height = id.height;
+  c.getContext('2d').putImageData(id, 0, 0);
+  return c.getContext('2d').getImageData(0,0,c.width,c.height);
+}
+
+// ==============================
+// SIDEBAR
+// ==============================
+function buildSidebar() {
+  const list = document.getElementById('category-list');
+  const noPackMsg = document.getElementById('no-pack-msg');
+  list.innerHTML = '';
+
+  const cats = {};
+  for (const [path, tex] of Object.entries(texturePack)) {
+    if (!cats[tex.category]) cats[tex.category] = [];
+    cats[tex.category].push([path, tex]);
+  }
+
+  const sortedCats = Object.keys(cats).sort();
+  if (sortedCats.length === 0) {
+    noPackMsg.style.display = '';
+  } else {
+    noPackMsg.style.display = 'none';
+    for (const cat of sortedCats) {
+      const group = document.createElement('div');
+      group.className = 'cat-group open';
+      group.dataset.cat = cat;
+
+      const header = document.createElement('div');
+      header.className = 'cat-header';
+      header.innerHTML = `<span>${cat} <span style="color:var(--text4);font-size:9px;">(${cats[cat].length})</span></span><span class="cat-arrow">▶</span>`;
+      header.onclick = (e) => { e.stopPropagation(); group.classList.toggle('open'); };
+      group.appendChild(header);
+
+      const items = document.createElement('div');
+      items.className = 'cat-items';
+      cats[cat].sort((a,b) => a[1].name.localeCompare(b[1].name));
+      for (const [path, tex] of cats[cat]) {
+        items.appendChild(makeTexItem(path, tex));
+      }
+      group.appendChild(items);
+      list.appendChild(group);
+    }
+  }
+
+  updateModifiedCount();
+}
+
+function makeTexItem(path, tex) {
+  const d = document.createElement('div');
+  d.className = 'tex-item' + (path === currentTexPath ? ' active' : '');
+  d.dataset.path = path;
+  d.title = path;
+
+  const thumb = document.createElement('canvas');
+  thumb.width = tex.data.width;
+  thumb.height = tex.data.height;
+  thumb.getContext('2d').putImageData(tex.data, 0, 0);
+  thumb.className = 'tex-thumb';
+
+  const label = document.createElement('span');
+  label.textContent = tex.name;
+  label.style.overflow = 'hidden';
+  label.style.textOverflow = 'ellipsis';
+
+  d.appendChild(thumb);
+  d.appendChild(label);
+  if (tex.modified) {
+    const dot = document.createElement('span');
+    dot.style.cssText = 'width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-left:auto;';
+    d.appendChild(dot);
+  }
+  d.onclick = (e) => { e.stopPropagation(); openTexture(path); };
+  return d;
+}
+
+function filterTextures(query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll('.tex-item').forEach(el => {
+    const match = el.dataset.path.toLowerCase().includes(q) || el.title.toLowerCase().includes(q);
+    el.style.display = match ? '' : 'none';
+  });
+  document.querySelectorAll('.cat-group').forEach(g => {
+    const anyVisible = [...g.querySelectorAll('.tex-item')].some(el => el.style.display !== 'none');
+    g.style.display = anyVisible ? '' : 'none';
+    if (q) g.classList.add('open');
+  });
+}
+
+// ==============================
+// OPEN TEXTURE
+// ==============================
+function openTexture(path) {
+  // ── FIX 1: guard before saving so a stale/null path never crashes ──
+  if (currentTexPath && texturePack[currentTexPath]) {
+    texturePack[currentTexPath].data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  }
+
+  currentTexPath = path;
+  const tex = texturePack[path];
+  if (!tex) return;
+
+  undoStack = [];
+  redoStack = [];
+
+  const w = tex.data.width, h = tex.data.height;
+  canvas.width = w; canvas.height = h;
+  gridCanvas.width = w; gridCanvas.height = h;
+  ctx.putImageData(tex.data, 0, 0);
+
+  document.getElementById('welcome-msg').style.display = 'none';
+  document.getElementById('canvas-wrap').style.display = '';
+
+  fitToScreen();
+  drawGrid();
+
+  document.getElementById('info-name').textContent = tex.name;
+  document.getElementById('info-size').textContent = w + ' × ' + h;
+  document.getElementById('info-cat').textContent = tex.category;
+  document.getElementById('info-modified').textContent = tex.modified ? 'Yes ●' : 'No';
+  document.getElementById('canvas-info').textContent = tex.name + ' (' + w + '×' + h + ')';
+
+  document.querySelectorAll('.tex-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.path === path);
+  });
+
+  setStatus('Editing: ' + tex.name);
+  pushUndo();
+}
+
+// ==============================
+// CANVAS DRAWING
+// ==============================
+
+// ── FIX 2: compute pixel coords from the canvas element's own bounding rect,
+//    not the CSS-scaled wrapper. This gives exact 1:1 pixel mapping at any zoom.
+function getPixelFromEvent(e) {
+  const rect = canvas.getBoundingClientRect();
+  const x = Math.floor((e.clientX - rect.left) / (rect.width  / canvas.width));
+  const y = Math.floor((e.clientY - rect.top)  / (rect.height / canvas.height));
+  return { x, y };
+}
+
+function inBounds(x, y) { return x >= 0 && y >= 0 && x < canvas.width && y < canvas.height; }
+
+function hexToRGBA(hex, a=255) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return [r,g,b,a];
+}
+
+function getPixelColor(x, y) {
+  const d = ctx.getImageData(x,y,1,1).data;
+  return [d[0],d[1],d[2],d[3]];
+}
+
+function setPixel(x, y, color) {
+  if (!inBounds(x,y)) return;
+  const bsz = parseInt(document.getElementById('brush-size').value);
+  const op  = parseInt(document.getElementById('brush-opacity').value) / 100;
+  const [r,g,b,a] = color;
+  for (let dy = 0; dy < bsz; dy++) {
+    for (let dx = 0; dx < bsz; dx++) {
+      const px = x+dx, py = y+dy;
+      if (!inBounds(px,py)) continue;
+      if (document.getElementById('dither-mode').checked && (px+py)%2===0) continue;
+      ctx.fillStyle = `rgba(${r},${g},${b},${a/255*op})`;
+      ctx.fillRect(px, py, 1, 1);
+    }
+  }
+}
+
+function erasePixel(x, y) {
+  const bsz = parseInt(document.getElementById('brush-size').value);
+  for (let dy = 0; dy < bsz; dy++) {
+    for (let dx = 0; dx < bsz; dx++) {
+      if (inBounds(x+dx,y+dy)) ctx.clearRect(x+dx, y+dy, 1, 1);
+    }
+  }
+}
+
+function floodFill(x, y, fillColor) {
+  if (!inBounds(x,y)) return;
+  const imageData = ctx.getImageData(0,0,canvas.width,canvas.height);
+  const d = imageData.data;
+  const idx = (y * canvas.width + x) * 4;
+  const target = [d[idx],d[idx+1],d[idx+2],d[idx+3]];
+  const [fr,fg,fb,fa] = fillColor;
+  if (target[0]===fr&&target[1]===fg&&target[2]===fb&&target[3]===fa) return;
+  const stack = [[x,y]];
+  while (stack.length) {
+    const [cx,cy] = stack.pop();
+    if (!inBounds(cx,cy)) continue;
+    const ci = (cy*canvas.width+cx)*4;
+    if (d[ci]!==target[0]||d[ci+1]!==target[1]||d[ci+2]!==target[2]||d[ci+3]!==target[3]) continue;
+    d[ci]=fr;d[ci+1]=fg;d[ci+2]=fb;d[ci+3]=fa;
+    stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
+  }
+  ctx.putImageData(imageData,0,0);
+}
+
+function drawLine(x0,y0,x1,y1,color) {
+  let dx=Math.abs(x1-x0),dy=Math.abs(y1-y0);
+  let sx=x0<x1?1:-1,sy=y0<y1?1:-1,err=dx-dy;
+  while(true){
+    setPixel(x0,y0,color);
+    if(x0===x1&&y0===y1)break;
+    let e2=2*err;
+    if(e2>-dy){err-=dy;x0+=sx;}
+    if(e2<dx){err+=dx;y0+=sy;}
+  }
+}
+
+let lineStart = null;
+let linePreview = null;
+
+function canvasMouseDown(e) {
+  if (!currentTexPath) return;
+  if (e.button === 1) return;
+  const {x, y} = getPixelFromEvent(e);
+  if (!inBounds(x,y)) return;
+  isDrawing = true;
+  lastPx = {x, y};
+  const color = hexToRGBA(fgColor, alpha);
+  if (tool === 'pencil') { pushUndo(); setPixel(x, y, color); markModified(); }
+  else if (tool === 'eraser') { pushUndo(); erasePixel(x, y); markModified(); }
+  else if (tool === 'fill') { pushUndo(); floodFill(x, y, color); markModified(); }
+  else if (tool === 'eyedrop') {
+    const [r,g,b,a] = getPixelColor(x, y);
+    fgColor = '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+    alpha = a;
+    syncColorUI();
+    addToRecent(fgColor);
+    isDrawing = false;
+  }
+  else if (tool === 'line') {
+    pushUndo();
+    lineStart = {x, y};
+    linePreview = copyImageData(ctx.getImageData(0,0,canvas.width,canvas.height));
+  }
+  updatePosDisplay(x, y);
+}
+
+function canvasMouseMove(e) {
+  const {x, y} = getPixelFromEvent(e);
+  updatePosDisplay(x, y);
+  if (!isDrawing || !currentTexPath) return;
+  if (!inBounds(x, y)) return;
+  if (lastPx && lastPx.x === x && lastPx.y === y) return;
+  const color = hexToRGBA(fgColor, alpha);
+  if (tool === 'pencil') {
+    if (lastPx) drawLine(lastPx.x, lastPx.y, x, y, color);
+    else setPixel(x, y, color);
+    markModified();
+  } else if (tool === 'eraser') {
+    erasePixel(x, y);
+    markModified();
+  } else if (tool === 'line' && lineStart && linePreview) {
+    ctx.putImageData(linePreview, 0, 0);
+    drawLine(lineStart.x, lineStart.y, x, y, color);
+  }
+  lastPx = {x, y};
+}
+
+function canvasMouseUp(e) {
+  if (tool === 'line' && linePreview) { linePreview = null; markModified(); }
+  isDrawing = false;
+  lastPx = null;
+}
+
+function canvasWheel(e) {
+  e.preventDefault();
+  if (e.deltaY < 0) zoomIn(); else zoomOut();
+}
+
+// ==============================
+// ZOOM
+// ==============================
+function applyZoom() {
+  const wrap = document.getElementById('canvas-wrap');
+  wrap.style.transform = `scale(${zoom})`;
+  wrap.style.transformOrigin = 'center center';
+  document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+  drawGrid();
+}
+
+function setZoom(z) { closeAllMenus(); zoom = z; applyZoom(); }
+function zoomIn()  { zoom = Math.min(32, zoom * 2); applyZoom(); }
+function zoomOut() { zoom = Math.max(0.5, zoom / 2); applyZoom(); }
+function fitToScreen() {
+  if (!currentTexPath) return;
+  const vp = document.getElementById('canvas-viewport');
+  const vpW = vp.clientWidth - 40, vpH = vp.clientHeight - 40;
+  const zw = Math.floor(vpW / canvas.width), zh = Math.floor(vpH / canvas.height);
+  zoom = Math.max(1, Math.min(zw, zh));
+  applyZoom();
+}
+
+// ==============================
+// GRID
+// ==============================
+function drawGrid() {
+  gridCtx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+  if (!gridVisible || zoom < 4) return;
+  gridCtx.strokeStyle = 'rgba(255,255,255,0.08)';
+  gridCtx.lineWidth = 1/zoom;
+  for (let x = 0; x <= canvas.width; x++) {
+    gridCtx.beginPath(); gridCtx.moveTo(x, 0); gridCtx.lineTo(x, canvas.height); gridCtx.stroke();
+  }
+  for (let y = 0; y <= canvas.height; y++) {
+    gridCtx.beginPath(); gridCtx.moveTo(0, y); gridCtx.lineTo(canvas.width, y); gridCtx.stroke();
+  }
+}
+
+function toggleGrid() {
+  closeAllMenus();
+  gridVisible = !gridVisible;
+  document.getElementById('tool-grid').classList.toggle('active', gridVisible);
+  drawGrid();
+}
+
+// ==============================
+// UNDO/REDO
+// ==============================
+function pushUndo() {
+  if (!currentTexPath) return;
+  const snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  undoStack.push(snapshot);
+  if (undoStack.length > 50) undoStack.shift();
+  redoStack = [];
+}
+
+function undoAction() {
+  if (!currentTexPath || undoStack.length < 2) { toast('Nothing to undo', 'warn'); return; }
+  redoStack.push(undoStack.pop());
+  ctx.putImageData(undoStack[undoStack.length-1], 0, 0);
+  markModified();
+}
+
+function redoAction() {
+  if (!redoStack.length) { toast('Nothing to redo', 'warn'); return; }
+  const snap = redoStack.pop();
+  undoStack.push(snap);
+  ctx.putImageData(snap, 0, 0);
+  markModified();
+}
+
+// ==============================
+// MODIFY / SAVE
+// ==============================
+function markModified() {
+  // ── FIX 1: guard against stale/null path ──
+  if (!currentTexPath || !texturePack[currentTexPath]) return;
+  texturePack[currentTexPath].modified = true;
+  texturePack[currentTexPath].data = ctx.getImageData(0,0,canvas.width,canvas.height);
+  modifiedPaths.add(currentTexPath);
+  document.getElementById('info-modified').textContent = 'Yes ●';
+  document.getElementById('info-modified').style.color = 'var(--amber)';
+  updateModifiedCount();
+  const el = document.querySelector(`.tex-item[data-path="${CSS.escape(currentTexPath)}"]`);
+  if (el) {
+    const thumb = el.querySelector('.tex-thumb');
+    if (thumb) {
+      thumb.width = canvas.width; thumb.height = canvas.height;
+      thumb.getContext('2d').putImageData(texturePack[currentTexPath].data, 0, 0);
+    }
+    if (!el.querySelector('.mod-dot')) {
+      const dot = document.createElement('span');
+      dot.className = 'mod-dot';
+      dot.style.cssText = 'width:5px;height:5px;border-radius:50%;background:var(--amber);flex-shrink:0;margin-left:auto;';
+      el.appendChild(dot);
+    }
+  }
+}
+
+function updateModifiedCount() {
+  document.getElementById('modified-count').textContent = modifiedPaths.size + ' modified';
+}
+
+function saveCurrentTexture(silent=false) {
+  // ── FIX 1: guard against stale/null path ──
+  if (!currentTexPath || !texturePack[currentTexPath]) return;
+  texturePack[currentTexPath].data = ctx.getImageData(0,0,canvas.width,canvas.height);
+  if (!silent) toast('Texture saved', 'success');
+}
+
+function revertTexture() {
+  if (!currentTexPath || !texturePack[currentTexPath]) return;
+  const tex = texturePack[currentTexPath];
+  ctx.putImageData(tex.original, 0, 0);
+  tex.data = copyImageData(tex.original);
+  tex.modified = false;
+  modifiedPaths.delete(currentTexPath);
+  document.getElementById('info-modified').textContent = 'No';
+  document.getElementById('info-modified').style.color = '';
+  updateModifiedCount();
+  pushUndo();
+  toast('Reverted to original', 'success');
+}
+
+// ==============================
+// TOOLS
+// ==============================
+function setTool(t) {
+  tool = t;
+  document.querySelectorAll('.tool-btn[id^="tool-"]').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('tool-' + t);
+  if (el) el.classList.add('active');
+  canvas.style.cursor = t === 'eyedrop' ? 'crosshair' : t === 'fill' ? 'cell' : 'crosshair';
+}
+
+// ==============================
+// EDIT MENU ACTIONS
+// ==============================
+function fillAll() {
+  closeAllMenus();
+  if (!currentTexPath) return;
+  pushUndo();
+  const [r,g,b] = hexToRGBA(fgColor, alpha);
+  ctx.fillStyle = `rgba(${r},${g},${b},${alpha/255})`;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  markModified();
+}
+
+function clearCanvas() {
+  closeAllMenus();
+  if (!currentTexPath) return;
+  pushUndo();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  markModified();
+}
+
+function flipH() {
+  closeAllMenus();
+  if (!currentTexPath) return;
+  pushUndo();
+  const tmp = document.createElement('canvas');
+  tmp.width = canvas.width; tmp.height = canvas.height;
+  const tctx = tmp.getContext('2d');
+  tctx.scale(-1,1); tctx.drawImage(canvas, -canvas.width, 0);
+  ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(tmp,0,0);
+  markModified();
+}
+
+function flipV() {
+  closeAllMenus();
+  if (!currentTexPath) return;
+  pushUndo();
+  const tmp = document.createElement('canvas');
+  tmp.width = canvas.width; tmp.height = canvas.height;
+  const tctx = tmp.getContext('2d');
+  tctx.scale(1,-1); tctx.drawImage(canvas, 0, -canvas.height);
+  ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(tmp,0,0);
+  markModified();
+}
+
+function copyPixels() { clipboard = ctx.getImageData(0,0,canvas.width,canvas.height); toast('Canvas copied'); }
+function pastePixels() {
+  if (!clipboard || !currentTexPath) return;
+  pushUndo();
+  ctx.putImageData(clipboard, 0, 0);
+  markModified();
+  toast('Pasted');
+}
+
+function generateMCPalette() { loadMCPalette(); closeAllMenus(); }
+function resize16() { resizeTexture(16,16); }
+function resize32() { resizeTexture(32,32); }
+function resize64() { resizeTexture(64,64); }
+
+function resizeTexture(w,h) {
+  closeAllMenus();
+  if (!currentTexPath) return;
+  pushUndo();
+  const tmp = document.createElement('canvas');
+  tmp.width = w; tmp.height = h;
+  tmp.getContext('2d').drawImage(canvas,0,0,w,h);
+  canvas.width = w; canvas.height = h;
+  gridCanvas.width = w; gridCanvas.height = h;
+  ctx.drawImage(tmp,0,0);
+  drawGrid();
+  markModified();
+  document.getElementById('info-size').textContent = w + ' × ' + h;
+  toast(`Resized to ${w}×${h}`);
+}
+
+// ==============================
+// EXPORT
+// ==============================
+function exportAsPNG() {
+  closeAllMenus();
+  if (!currentTexPath) { toast('No texture open', 'warn'); return; }
+  saveCurrentTexture(true);
+  const link = document.createElement('a');
+  link.download = texturePack[currentTexPath].name + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  toast('Exported as PNG', 'success');
+}
+
+function showExportPackModal() {
+  closeAllMenus();
+  if (!Object.keys(texturePack).length) { toast('No pack loaded', 'warn'); return; }
+  updateMCPreview();
+  updateMetaJsonPreview();
+  document.getElementById('modal-packmeta').classList.add('show');
+}
+
+async function exportPack() {
+  closeModal('modal-packmeta');
+  closeAllMenus();
+  if (!Object.keys(texturePack).length) { toast('No pack loaded', 'warn'); return; }
+  setStatus('Building ZIP…', 'warn');
+  saveCurrentTexture(true);
+
+  const packFormat = parseInt(document.getElementById('meta-packformat').value);
+  const desc = document.getElementById('meta-desc').value;
+
+  const zip = new JSZip();
+  const mcmeta = JSON.stringify({ pack: { pack_format: packFormat, description: desc } }, null, 2);
+  zip.file('pack.mcmeta', mcmeta);
+
+  for (const [path, tex] of Object.entries(texturePack)) {
+    const tmp = document.createElement('canvas');
+    tmp.width = tex.data.width; tmp.height = tex.data.height;
+    tmp.getContext('2d').putImageData(tex.data, 0, 0);
+    const base64 = tmp.toDataURL('image/png').split(',')[1];
+    zip.file(path, base64, {base64:true});
+  }
+
+  const blob = await zip.generateAsync({type:'blob', compression:'DEFLATE'});
+  const link = document.createElement('a');
+  link.download = 'mcdesign_pack.zip';
+  link.href = URL.createObjectURL(blob);
+  link.click();
+  setStatus('Pack exported', '');
+  toast('Pack exported as ZIP (with pack.mcmeta)', 'success');
+}
+
+function exportAll() {
+  closeAllMenus();
+  if (!modifiedPaths.size) { toast('No modified textures to export', 'warn'); return; }
+  showExportPackModal();
+}
+
+// ==============================
+// MC COLOR EDITOR
+// ==============================
+const MC_COLORS = [
+  {code:'§0', hex:'#000000', name:'Black'},
+  {code:'§1', hex:'#0000AA', name:'Dark Blue'},
+  {code:'§2', hex:'#00AA00', name:'Dark Green'},
+  {code:'§3', hex:'#00AAAA', name:'Dark Aqua'},
+  {code:'§4', hex:'#AA0000', name:'Dark Red'},
+  {code:'§5', hex:'#AA00AA', name:'Dark Purple'},
+  {code:'§6', hex:'#FFAA00', name:'Gold'},
+  {code:'§7', hex:'#AAAAAA', name:'Gray'},
+  {code:'§8', hex:'#555555', name:'Dark Gray'},
+  {code:'§9', hex:'#5555FF', name:'Blue'},
+  {code:'§a', hex:'#55FF55', name:'Green'},
+  {code:'§b', hex:'#55FFFF', name:'Aqua'},
+  {code:'§c', hex:'#FF5555', name:'Red'},
+  {code:'§d', hex:'#FF55FF', name:'Light Purple'},
+  {code:'§e', hex:'#FFFF55', name:'Yellow'},
+  {code:'§f', hex:'#FFFFFF', name:'White'},
+];
+
+const MC_FORMATS = [
+  {code:'§l', label:'§l Bold'},
+  {code:'§o', label:'§o Italic'},
+  {code:'§n', label:'§n Under'},
+  {code:'§m', label:'§m Strike'},
+  {code:'§r', label:'§r Reset'},
+];
+
+function initMCColorEditor() {
+  const chips = document.getElementById('mc-code-chips');
+  chips.innerHTML = '';
+  MC_COLORS.forEach(c => {
+    const chip = document.createElement('div');
+    chip.className = 'mc-code-chip';
+    chip.style.background = c.hex + '22';
+    chip.style.color = c.hex;
+    chip.style.borderColor = c.hex + '44';
+    chip.textContent = c.code;
+    chip.title = c.name;
+    chip.onclick = () => insertMCCode(c.code);
+    chips.appendChild(chip);
+  });
+  MC_FORMATS.forEach(f => {
+    const chip = document.createElement('div');
+    chip.className = 'mc-code-chip';
+    chip.style.color = 'var(--text3)';
+    chip.textContent = f.label;
+    chip.onclick = () => insertMCCode(f.code);
+    chips.appendChild(chip);
+  });
+}
+
+function insertMCCode(code) {
+  const ta = document.getElementById('meta-desc');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.slice(0, start) + code + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + code.length;
+  ta.focus();
+  updateMCPreview();
+  updateMetaJsonPreview();
+}
+
+function updateMCPreview() {
+  const raw = document.getElementById('meta-desc').value;
+  const preview = document.getElementById('mc-preview');
+  let html = '', i = 0;
+  let currentColor = '#FFFFFF', bold = false, italic = false, under = false, strike = false;
+  while (i < raw.length) {
+    if (raw[i] === '§' && i+1 < raw.length) {
+      const code = raw[i+1].toLowerCase();
+      const colorEntry = MC_COLORS.find(c => c.code === '§'+code);
+      if (colorEntry) { currentColor = colorEntry.hex; bold=false;italic=false;under=false;strike=false; }
+      else if (code==='l') bold = true;
+      else if (code==='o') italic = true;
+      else if (code==='n') under = true;
+      else if (code==='m') strike = true;
+      else if (code==='r') { currentColor='#FFFFFF';bold=false;italic=false;under=false;strike=false; }
+      i += 2;
+    } else {
+      let styles = `color:${currentColor};`;
+      if (bold) styles += 'font-weight:bold;';
+      if (italic) styles += 'font-style:italic;';
+      if (under) styles += 'text-decoration:underline;';
+      if (strike) styles += 'text-decoration:line-through;';
+      let text = '';
+      while (i < raw.length && !(raw[i]==='§' && i+1 < raw.length)) {
+        if (raw[i] === '<') text += '&lt;';
+        else if (raw[i] === '>') text += '&gt;';
+        else text += raw[i];
+        i++;
+      }
+      html += `<span style="${styles}">${text}</span>`;
+    }
+  }
+  preview.innerHTML = html || '<span style="color:#555;">No description</span>';
+  updateMetaJsonPreview();
+}
+
+function updateMetaJsonPreview() {
+  const pf = document.getElementById('meta-packformat').value;
+  const desc = document.getElementById('meta-desc').value;
+  document.getElementById('meta-json-preview').textContent =
+    `{ "pack": { "pack_format": ${pf}, "description": "${desc.replace(/"/g,'\\"')}" } }`;
+}
+
+// ==============================
+// NEW TEXTURE
+// ==============================
+function createNewTexture() {
+  const name = document.getElementById('new-name').value.trim() || 'new_texture';
+  const w = parseInt(document.getElementById('new-w').value);
+  const h = parseInt(document.getElementById('new-h').value);
+  closeModal('modal-new');
+  canvas.width = w; canvas.height = h;
+  gridCanvas.width = w; gridCanvas.height = h;
+  ctx.clearRect(0,0,w,h);
+  const path = 'custom/' + name + '.png';
+  const imageData = ctx.getImageData(0,0,w,h);
+  texturePack[path] = {data: copyImageData(imageData), original: copyImageData(imageData), modified: false, name, category: 'Custom', path};
+  currentTexPath = path;
+  document.getElementById('welcome-msg').style.display = 'none';
+  buildSidebar();
+  fitToScreen();
+  drawGrid();
+  document.getElementById('info-name').textContent = name;
+  document.getElementById('info-size').textContent = w + ' × ' + h;
+  document.getElementById('info-cat').textContent = 'Custom';
+  document.getElementById('canvas-info').textContent = name + ' (' + w + '×' + h + ')';
+  setStatus('New texture: ' + name);
+  pushUndo();
+  toast('Created ' + name, 'success');
+}
+
+// ==============================
+// STATUS / DISPLAY
+// ==============================
+function setStatus(msg, type='') {
+  document.getElementById('status-text').textContent = msg;
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot' + (type === 'warn' ? ' warn' : '');
+}
+
+function updatePosDisplay(x, y) {
+  if (!currentTexPath) return;
+  document.getElementById('pos-display').textContent = `${x}, ${y}`;
+  if (inBounds(x, y)) {
+    const [r,g,b,a] = getPixelColor(x,y);
+    const hex = '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+    document.getElementById('color-display-status').textContent = `rgba(${r},${g},${b},${a})  ${hex}`;
+  }
+}
+
+function showTexInfo() { closeAllMenus(); }
+function showPackFormat() { closeAllMenus(); toast('Pack format: Java Edition'); }
+
+// ==============================
+// GUIDE SYSTEM
+// ==============================
+let currentGuideStep = 1;
+const GUIDE_TOTAL_STEPS = 6;
+
+function showGuide() {
+  closeAllMenus();
+  currentGuideStep = 1;
+  renderGuideStep();
+  document.getElementById('modal-guide').classList.add('show');
+}
+
+function closeGuide() {
+  document.getElementById('modal-guide').classList.remove('show');
+  try { localStorage.setItem('mcdesign_guide_done', '1'); } catch(e) {}
+}
+
+function goToStep(n) { currentGuideStep = n; renderGuideStep(); }
+function guideNav(dir) {
+  currentGuideStep = Math.max(1, Math.min(GUIDE_TOTAL_STEPS, currentGuideStep + dir));
+  renderGuideStep();
+}
+
+function renderGuideStep() {
+  for (let i = 1; i <= GUIDE_TOTAL_STEPS; i++) {
+    const el = document.getElementById('guide-step-'+i);
+    if (el) el.classList.toggle('active', i === currentGuideStep);
+    const dot = document.getElementById('gdot-'+i);
+    if (dot) {
+      dot.className = 'guide-dot';
+      if (i < currentGuideStep) dot.classList.add('done');
+      else if (i === currentGuideStep) dot.classList.add('current');
+    }
+  }
+  document.getElementById('guide-progress-label').textContent = `Step ${currentGuideStep} of ${GUIDE_TOTAL_STEPS}`;
+  const prevBtn = document.getElementById('guide-prev-btn');
+  const nextBtn = document.getElementById('guide-next-btn');
+  prevBtn.style.display = currentGuideStep > 1 ? '' : 'none';
+  if (currentGuideStep === GUIDE_TOTAL_STEPS) {
+    nextBtn.textContent = '✓ Finish';
+    nextBtn.onclick = () => closeGuide();
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.onclick = () => guideNav(1);
+  }
+}
+
+// ==============================
+// KEYBOARD SHORTCUTS
+// ==============================
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  const k = e.key.toLowerCase();
+  if (e.ctrlKey || e.metaKey) {
+    switch(k) {
+      case 'z': e.preventDefault(); undoAction(); break;
+      case 'y': e.preventDefault(); redoAction(); break;
+      case 's': e.preventDefault(); saveCurrentTexture(); break;
+      case 'e': e.preventDefault(); exportAsPNG(); break;
+      case 'o': e.preventDefault(); triggerImport(); break;
+      case 'f': e.preventDefault(); fillAll(); break;
+      case 'n': e.preventDefault(); newTexture(); break;
+    }
+    return;
+  }
+  switch(k) {
+    case 'p': setTool('pencil'); break;
+    case 'e': setTool('eraser'); break;
+    case 'b': setTool('fill'); break;
+    case 'i': setTool('eyedrop'); break;
+    case 's': setTool('select'); break;
+    case 'l': setTool('line'); break;
+    case 'g': toggleGrid(); break;
+    case 'f': fitToScreen(); break;
+    case 'x': swapColors(); break;
+    case '=': case '+': zoomIn(); break;
+    case '-': zoomOut(); break;
+    case '1': setZoom(1); break;
+    case '2': setZoom(2); break;
+    case '3': setZoom(4); break;
+    case '4': setZoom(8); break;
+    case '5': setZoom(16); break;
+  }
+});
+
+// ==============================
+// INIT
+// ==============================
+renderPalette();
+renderSwatches();
+setTool('pencil');
+document.getElementById('tool-grid').classList.add('active');
+document.getElementById('canvas-wrap').style.display = 'none';
+initMCColorEditor();
+document.getElementById('meta-packformat').addEventListener('change', updateMetaJsonPreview);
+
+// Load demo textures
+function loadDemo() {
+  const w = 16, h = 16;
+  const tmpC = document.createElement('canvas');
+  tmpC.width = w; tmpC.height = h;
+  const tmpCtx = tmpC.getContext('2d');
+
+  const colors = [
+    [124,79,57,255],[124,79,57,255],[113,72,52,255],[134,86,62,255],
+    [104,67,48,255],[134,86,62,255],[124,79,57,255],[114,73,53,255],
+    [144,93,68,255],[104,67,48,255],[124,79,57,255],[134,86,62,255],
+    [114,73,53,255],[124,79,57,255],[104,67,48,255],[134,86,62,255],
+  ];
+
+  const id = tmpCtx.createImageData(w, h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const ci = ((x+y*3) % colors.length);
+      const [r,g,b] = colors[ci];
+      const i = (y*w+x)*4;
+      id.data[i]   = r + Math.floor(Math.random()*20-10);
+      id.data[i+1] = g + Math.floor(Math.random()*15-7);
+      id.data[i+2] = b + Math.floor(Math.random()*10-5);
+      id.data[i+3] = 255;
+    }
+  }
+  tmpCtx.putImageData(id, 0, 0);
+  const planksData = tmpCtx.getImageData(0,0,w,h);
+  texturePack['demo/oak_planks.png'] = { data: copyImageData(planksData), original: copyImageData(planksData), modified: false, name: 'oak_planks', category: 'Demo', path: 'demo/oak_planks.png' };
+
+  const stone = tmpCtx.createImageData(16,16);
+  for (let i = 0; i < stone.data.length; i+=4) {
+    const v = 90+Math.floor(Math.random()*40);
+    stone.data[i]=v; stone.data[i+1]=v; stone.data[i+2]=v; stone.data[i+3]=255;
+  }
+  texturePack['demo/stone.png'] = { data: stone, original: copyImageData(stone), modified: false, name: 'stone', category: 'Demo', path: 'demo/stone.png' };
+
+  const grass = tmpCtx.createImageData(16,16);
+  for (let y2=0; y2<16; y2++) for (let x2=0; x2<16; x2++) {
+    const i=(y2*16+x2)*4;
+    if (y2<3) { grass.data[i]=85; grass.data[i+1]=139; grass.data[i+2]=60; grass.data[i+3]=255; }
+    else { const v=134+Math.floor(Math.random()*20); grass.data[i]=v-10; grass.data[i+1]=Math.floor(v*0.7)-5; grass.data[i+2]=Math.floor(v*0.5); grass.data[i+3]=255; }
+  }
+  texturePack['demo/grass_block_side.png'] = { data: grass, original: copyImageData(grass), modified: false, name: 'grass_block_side', category: 'Demo', path: 'demo/grass_block_side.png' };
+
+  buildSidebar();
+}
+
+loadDemo();
+
+(function() {
+  let shouldShow = false;
+  try { shouldShow = !localStorage.getItem('mcdesign_guide_done'); } catch(e) { shouldShow = true; }
+  if (shouldShow) setTimeout(() => showGuide(), 600);
+})();
+</script>
+</body>
+</html>
