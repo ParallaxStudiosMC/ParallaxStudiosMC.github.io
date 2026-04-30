@@ -1,4 +1,4 @@
-      - name: Fetch Data
+- name: Fetch Data
         env:
           CF_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: |
@@ -6,34 +6,32 @@
           const fs = require('fs');
           const slugs = ['hydrogenfps', 'never-alone', 'weyes', 'dv', 'the-shadow-stalker-horror'];
           const apiKey = process.env.CF_API_KEY;
-          
+
           async function update() {
             try {
               const results = [];
               for (const slug of slugs) {
                 console.log('Fetching: ' + slug);
-                const res = await fetch('https://curseforge.com' + slug, {
+                const res = await fetch('https://api.curseforge.com/v1/mods/search?gameId=432&slug=' + slug, {
                   headers: { 'x-api-key': apiKey, 'Accept': 'application/json' }
                 });
-
                 if (!res.ok) {
                   console.error('API Error for ' + slug + ': ' + res.status + ' ' + res.statusText);
                   continue;
                 }
-
                 const json = await res.json();
-                
+
                 if (json.data && json.data.length > 0) {
-                  const mod = json.data[0]; // CurseForge search returns an array
+                  const mod = json.data[0];
                   results.push({ name: mod.name, downloads: mod.downloadCount });
                   console.log('Success: ' + mod.name + ' (' + mod.downloadCount + ')');
                 } else {
                   console.error('No mod found for slug: ' + slug);
                 }
               }
-              
+
               if (results.length === 0) throw new Error('No data was fetched!');
-              
+
               fs.writeFileSync('stats.json', JSON.stringify(results, null, 2));
               console.log('Saved stats.json successfully.');
             } catch (err) {
