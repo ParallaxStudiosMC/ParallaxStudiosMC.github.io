@@ -1,0 +1,45 @@
+name: Update Mod Stats
+on:
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch: # Allows you to run it manually for testing
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to save the JSON file back to your repo
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Fetch CurseForge Data
+        env:
+          CF_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+        run: |
+          # This script uses 'curl' to fetch data for your slugs
+          SLUGS=("hydrogenfps" "never-alone" "weyes" "dv" "the-shadow-stalker-horror")
+          echo "[" > stats.json
+          for i in "${!SLUGS[@]}"; do
+            slug=${SLUGS[$i]}
+            # Fetch data from CurseForge API
+            response=$(curl -s -X GET "https://curseforge.com" \
+              -H "x-api-key: $CF_API_KEY" \
+              -H "Accept: application/json")
+            
+            # Extract name and download count (using basic grep/sed for simplicity)
+            name=$(echo $response | grep -oP '"name":"\K[^"]+')
+            downloads=$(echo $response | grep -oP '"downloadCount":\K[0-9]+')
+            
+            echo "{\"name\":\"$name\", \"downloads\":$downloads}" >> stats.json
+            if [ $i -lt $((${#SLUGS[@]} - 1)) ]; then echo "," >> stats.json; fi
+          done
+          echo "]" >> stats.json
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add stats.json
+          git commit -m "Automated stats update" || exit 0 # Don't fail if no changes
+          git push
