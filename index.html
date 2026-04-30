@@ -251,7 +251,6 @@
             const CONFIG = {
                 API_BASE: 'https://api.modrinth.com/v2',
                 ORGANIZATION: 'parallax',
-                // List of all Parallax project slugs (from your organization)
                 PROJECT_SLUGS: [
                     "never-alone",
                     "dreadedviewer",
@@ -270,10 +269,9 @@
                     "modview",
                     "modernhud"
                 ],
-                CACHE_DURATION: 5 * 60 * 1000 // 5 minutes
+                CACHE_DURATION: 5 * 60 * 1000
             };
 
-            // Helper functions
             const formatNumber = (num) => {
                 if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
                 if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
@@ -289,7 +287,6 @@
                 setTimeout(() => toast.remove(), 3000);
             };
 
-            // Fetch with cache
             const fetchWithCache = async (url, cacheKey) => {
                 const cached = localStorage.getItem(cacheKey);
                 if (cached) {
@@ -298,17 +295,11 @@
                         return data;
                     }
                 }
-                
                 try {
                     const response = await fetch(url);
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
-                    
-                    localStorage.setItem(cacheKey, JSON.stringify({
-                        data,
-                        timestamp: Date.now()
-                    }));
-                    
+                    localStorage.setItem(cacheKey, JSON.stringify({ data, timestamp: Date.now() }));
                     return data;
                 } catch (error) {
                     console.error(`Failed to fetch ${url}:`, error);
@@ -316,95 +307,83 @@
                 }
             };
 
-            // Fetch project details
             const fetchProject = async (slug) => {
                 try {
-                    return await fetchWithCache(
-                        `${CONFIG.API_BASE}/project/${slug}`,
-                        `project_${slug}`
-                    );
-                } catch {
-                    return null;
-                }
+                    return await fetchWithCache(`${CONFIG.API_BASE}/project/${slug}`, `project_${slug}`);
+                } catch { return null; }
             };
 
-            // Fetch project versions (for loaders and game versions)
             const fetchProjectVersions = async (slug) => {
                 try {
-                    return await fetchWithCache(
-                        `${CONFIG.API_BASE}/project/${slug}/version`,
-                        `versions_${slug}`
-                    );
-                } catch {
-                    return [];
+                    return await fetchWithCache(`${CONFIG.API_BASE}/project/${slug}/version`, `versions_${slug}`);
+                } catch { return []; }
+            };
+
+            // Fetch CurseForge downloads from stats.json
+            const fetchCurseForgeDownloads = async () => {
+                try {
+                    const res = await fetch('./stats.json?t=' + Date.now()); // bust cache
+                    if (!res.ok) throw new Error('Failed to fetch stats.json');
+                    const data = await res.json();
+                    return data.reduce((sum, mod) => sum + (mod.downloads || 0), 0);
+                } catch (err) {
+                    console.warn('Could not load CurseForge stats:', err);
+                    return 0;
                 }
             };
 
-            // Main function to load all projects
             async function loadProjects() {
                 const projectGrid = document.getElementById('project-grid');
-                
+
                 try {
-                    
-                    // Fetch all projects
-                    const projects = await Promise.all(
-                        CONFIG.PROJECT_SLUGS.map(slug => fetchProject(slug))
-                    );
-                    
+                    // Fetch Modrinth projects and CurseForge stats in parallel
+                    const [projects, curseForgeTotal] = await Promise.all([
+                        Promise.all(CONFIG.PROJECT_SLUGS.map(slug => fetchProject(slug))),
+                        fetchCurseForgeDownloads()
+                    ]);
+
                     const validProjects = projects.filter(p => p !== null);
-                    
-                    // Sort by download count (most downloaded first)
                     validProjects.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
-                    
-                    // Calculate total downloads
-                    const totalDownloads = validProjects.reduce((sum, p) => sum + (p.downloads || 0), 0);
-                    
-                    // Update statistics
+
+                    const modrinthTotal = validProjects.reduce((sum, p) => sum + (p.downloads || 0), 0);
+                    const totalDownloads = modrinthTotal + curseForgeTotal;
+
                     const updateElement = (id, value) => {
                         const el = document.getElementById(id);
                         if (el) el.textContent = value;
                     };
-                    
+
                     updateElement('stat-projects', "16");
                     updateElement('project-count', "16");
                     updateElement('about-projects', "16");
-                    
+
                     updateElement('stat-downloads', formatNumber(totalDownloads));
                     updateElement('download-count', formatNumber(totalDownloads));
                     updateElement('about-downloads', formatNumber(totalDownloads));
-                    
+
                     updateElement('stat-members', '4');
                     updateElement('member-count', '4');
                     updateElement('about-members', '4');
-                    
-                    const now = new Date();
-                    
-                    // Update "VIEW ALL" link
+
                     const viewAllLink = document.getElementById('view-all-link');
                     if (viewAllLink) {
                         viewAllLink.innerHTML = `VIEW ALL 16 ON MODRINTH <i class="fas fa-arrow-right"></i>`;
                     }
-                    
-                    // Clear loading state
+
                     projectGrid.innerHTML = '';
-                    
-                    // Display first 6 projects (featured)
+
                     const featuredProjects = validProjects.slice(0, 6);
-                    
+
                     for (const project of featuredProjects) {
-                        // Fetch versions for this project
                         const versions = await fetchProjectVersions(project.slug);
-                        
-                        // Get unique loaders and latest game version
                         const loaders = [...new Set(versions.flatMap(v => v.loaders || []))].slice(0, 2);
                         const latestVersion = versions[0]?.game_versions?.slice(-1)[0] || '1.20.1';
-                        
-                        // Create project card
+
                         const card = document.createElement('div');
                         card.className = 'project-card';
-                        
+
                         const iconUrl = project.icon_url || 'https://cdn.modrinth.com/placeholder.svg';
-                        
+
                         card.innerHTML = `
                             <img src="${iconUrl}" alt="${project.title}" loading="lazy" onerror="this.src='https://cdn.modrinth.com/placeholder.svg'">
                             <div class="project-info">
@@ -421,18 +400,17 @@
                                 </div>
                             </div>
                         `;
-                        
-                        // Make card clickable
+
                         card.style.cursor = 'pointer';
                         card.addEventListener('click', () => {
                             window.open(`https://modrinth.com/project/${project.slug}`, '_blank');
                         });
-                        
+
                         projectGrid.appendChild(card);
                     }
-                    
+
                     showToast('Projects loaded successfully!');
-                    
+
                 } catch (error) {
                     console.error('Failed to load projects:', error);
                     projectGrid.innerHTML = `
@@ -445,39 +423,29 @@
                 }
             }
 
-            // Smooth scrolling for navigation
             document.querySelectorAll('nav a[href^="#"]').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     const targetId = link.getAttribute('href');
                     const targetSection = document.querySelector(targetId);
-                    
                     if (targetSection) {
                         targetSection.scrollIntoView({ behavior: 'smooth' });
-                        
-                        // Update active state
                         document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
                         link.classList.add('active');
                     }
                 });
             });
 
-            // Check URL hash on load
             if (window.location.hash) {
                 const targetSection = document.querySelector(window.location.hash);
                 if (targetSection) {
-                    setTimeout(() => {
-                        targetSection.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
+                    setTimeout(() => targetSection.scrollIntoView({ behavior: 'smooth' }), 100);
                 }
             }
 
-            // Load projects when page loads
             await loadProjects();
-            
-            // Optional: Refresh data every 5 minutes
             setInterval(loadProjects, 5 * 60 * 1000);
-            
+
         })();
     </script>
 </body>
