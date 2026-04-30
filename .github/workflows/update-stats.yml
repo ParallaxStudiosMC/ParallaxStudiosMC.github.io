@@ -1,19 +1,4 @@
-name: Update Mod Stats
-on:
-  schedule:
-    - cron: '0 * * * *'
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Fetch Data from CurseForge
+      - name: Fetch Data
         env:
           CF_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
         run: |
@@ -21,36 +6,40 @@ jobs:
           const fs = require('fs');
           const slugs = ['hydrogenfps', 'never-alone', 'weyes', 'dv', 'the-shadow-stalker-horror'];
           const apiKey = process.env.CF_API_KEY;
-
-          async function start() {
-            const results = [];
-            for (const slug of slugs) {
-              try {
-                const response = await fetch('https://curseforge.com' + slug, {
+          
+          async function update() {
+            try {
+              const results = [];
+              for (const slug of slugs) {
+                console.log('Fetching: ' + slug);
+                const res = await fetch('https://curseforge.com' + slug, {
                   headers: { 'x-api-key': apiKey, 'Accept': 'application/json' }
                 });
-                const json = await response.json();
-                if (json.data && json.data.length > 0) {
-                  const mod = json.data[0];
-                  results.push({ name: mod.name, downloads: mod.downloadCount });
-                  console.log('Fetched ' + mod.name);
-                } else {
-                  console.log('Could not find slug: ' + slug);
-                }
-              } catch (e) {
-                console.error('Error fetching ' + slug + ':', e.message);
-              }
-            }
-            fs.writeFileSync('stats.json', JSON.stringify(results, null, 2));
-            console.log('Saved stats.json successfully.');
-          }
-          start();
-          "
 
-      - name: Commit and Push
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@://github.com"
-          git add stats.json
-          git commit -m "Automated stats update" || exit 0
-          git push
+                if (!res.ok) {
+                  console.error('API Error for ' + slug + ': ' + res.status + ' ' + res.statusText);
+                  continue;
+                }
+
+                const json = await res.json();
+                
+                if (json.data && json.data.length > 0) {
+                  const mod = json.data[0]; // CurseForge search returns an array
+                  results.push({ name: mod.name, downloads: mod.downloadCount });
+                  console.log('Success: ' + mod.name + ' (' + mod.downloadCount + ')');
+                } else {
+                  console.error('No mod found for slug: ' + slug);
+                }
+              }
+              
+              if (results.length === 0) throw new Error('No data was fetched!');
+              
+              fs.writeFileSync('stats.json', JSON.stringify(results, null, 2));
+              console.log('Saved stats.json successfully.');
+            } catch (err) {
+              console.error('SCRIPT FAILED:', err.message);
+              process.exit(1);
+            }
+          }
+          update();
+          "
