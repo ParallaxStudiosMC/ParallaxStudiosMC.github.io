@@ -13,30 +13,38 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Fetch Data
+      - name: Fetch Data from CurseForge
         env:
           CF_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true # Clears that deprecation warning
         run: |
           node -e "
           const fs = require('fs');
           const slugs = ['hydrogenfps', 'never-alone', 'weyes', 'dv', 'the-shadow-stalker-horror'];
           const apiKey = process.env.CF_API_KEY;
-          
-          async function update() {
+
+          async function start() {
             const results = [];
             for (const slug of slugs) {
-              const res = await fetch('https://curseforge.com' + slug, {
-                headers: { 'x-api-key': apiKey, 'Accept': 'application/json' }
-              });
-              const json = await res.json();
-              if (json.data && json.data[0]) {
-                results.push({ name: json.data[0].name, downloads: json.data[0].downloadCount });
+              try {
+                const response = await fetch('https://curseforge.com' + slug, {
+                  headers: { 'x-api-key': apiKey, 'Accept': 'application/json' }
+                });
+                const json = await response.json();
+                if (json.data && json.data.length > 0) {
+                  const mod = json.data[0];
+                  results.push({ name: mod.name, downloads: mod.downloadCount });
+                  console.log('Fetched ' + mod.name);
+                } else {
+                  console.log('Could not find slug: ' + slug);
+                }
+              } catch (e) {
+                console.error('Error fetching ' + slug + ':', e.message);
               }
             }
             fs.writeFileSync('stats.json', JSON.stringify(results, null, 2));
+            console.log('Saved stats.json successfully.');
           }
-          update();
+          start();
           "
 
       - name: Commit and Push
