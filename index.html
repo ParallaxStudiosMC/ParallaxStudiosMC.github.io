@@ -123,7 +123,6 @@
                     <li><a href="#projects">PROJECTS</a></li>
                     <li><a href="#about">ABOUT</a></li>
                     <li><a href="newsroom.html">NEWSROOM</a></li>
-                    <li><a href="techdivision/index.html">TECH</a></li>
                     <li><a href="web/mcdesign">MCDesign Editor</a></li>
                 </ul>
             </nav>
@@ -146,7 +145,7 @@
                             <span class="stat-label">PROJECTS</span>
                         </div>
                         <div class="stat-block" onclick="window.location.href='#projects'">
-                            <span class="stat-num" id="stat-downloads">50.2K</span>
+                            <span class="stat-num" id="stat-downloads">67.4K</span>
                             <span class="stat-label">DOWNLOADS</span>
                         </div>
                         <div class="stat-block">
@@ -266,6 +265,7 @@
                     "survivalk",
                     "modernizemc",
                     "usefulmaterials",
+                    "pure-insanity",
                     "modview",
                     "modernhud"
                 ],
@@ -353,9 +353,9 @@
                         if (el) el.textContent = value;
                     };
 
-                    updateElement('stat-projects', "16");
-                    updateElement('project-count', "16");
-                    updateElement('about-projects', "16");
+                    updateElement('stat-projects', "17");
+                    updateElement('project-count', "17");
+                    updateElement('about-projects', "17");
 
                     updateElement('stat-downloads', formatNumber(totalDownloads));
                     updateElement('download-count', formatNumber(totalDownloads));
@@ -367,7 +367,7 @@
 
                     const viewAllLink = document.getElementById('view-all-link');
                     if (viewAllLink) {
-                        viewAllLink.innerHTML = `VIEW ALL 16 ON MODRINTH <i class="fas fa-arrow-right"></i>`;
+                        viewAllLink.innerHTML = `VIEW ALL 17 ON MODRINTH <i class="fas fa-arrow-right"></i>`;
                     }
 
                     projectGrid.innerHTML = '';
