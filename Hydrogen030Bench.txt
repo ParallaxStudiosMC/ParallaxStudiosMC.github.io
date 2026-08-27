@@ -1,0 +1,202 @@
+═══════════════════════════════════════════════════════════════
+  HYDROMARK REPORT (v0.2.1)
+  Generated:        2026-08-26 23:59:30
+  Hydrogen Version: 0.3.0
+═══════════════════════════════════════════════════════════════
+
+───────────────────────────────────────────────────────────────
+  BENCHMARK OVERVIEW
+───────────────────────────────────────────────────────────────
+  Phase 1 (Hydrogen)      Optimizations ENABLED
+  Phase 2 (Vanilla)       Optimizations DISABLED
+  Baseline window         15s per phase
+  Cooldown                40s between phases
+  Scenarios               12
+
+───────────────────────────────────────────────────────────────
+  SCENARIO RESULTS
+───────────────────────────────────────────────────────────────
+  ► TNT Explosion (25 blocks)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 1.55 ms     V: 2.41 ms     Δ: -35.8% [IMPROVEMENT]
+  FPS                     H: 5407.92 fps  V: 4025.45 fps  Δ: +34.3% [IMPROVEMENT]
+  Frame                   H: 0.20 ms     V: 0.31 ms     Δ: -34.3% [IMPROVEMENT]
+  Heap                    H: 460 MB      V: 487 MB
+
+  ► Chicken Mob Swarm (400 entities)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 7.55 ms     V: 7.86 ms     Δ: -3.9% [IMPROVEMENT]
+  FPS                     H: 5209.11 fps  V: 1873.65 fps  Δ: +178.0% [IMPROVEMENT]
+  Frame                   H: 0.21 ms     V: 0.54 ms     Δ: -60.5% [IMPROVEMENT]
+  Heap                    H: 443 MB      V: 498 MB
+
+  ► Ambient Village (35 entities)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 11.03 ms    V: 9.59 ms     Δ: +15.0% [REGRESSION]
+  FPS                     H: 5397.74 fps  V: 1978.16 fps  Δ: +172.9% [IMPROVEMENT]
+  Frame                   H: 0.22 ms     V: 0.51 ms     Δ: -56.4% [IMPROVEMENT]
+  Heap                    H: 459 MB      V: 501 MB
+
+  ► Nether Environment
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 6.92 ms     V: 5.43 ms     Δ: +27.4% [REGRESSION]
+  FPS                     H: 6294.52 fps  V: 2116.27 fps  Δ: +197.4% [IMPROVEMENT]
+  Frame                   H: 0.19 ms     V: 0.48 ms     Δ: -60.6% [IMPROVEMENT]
+  Heap                    H: 469 MB      V: 468 MB
+
+  ► Chunk Loading Stress (9x9)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 1.68 ms     V: 1.70 ms     Δ: -0.8% [IMPROVEMENT]
+  FPS                     H: 7921.48 fps  V: 2171.72 fps  Δ: +264.8% [IMPROVEMENT]
+  Frame                   H: 0.13 ms     V: 0.47 ms     Δ: -71.5% [IMPROVEMENT]
+  Heap                    H: 458 MB      V: 452 MB
+
+  ► Item Entity Flood (200 items)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 2.06 ms     V: 1.96 ms     Δ: +5.2% [REGRESSION]
+  FPS                     H: 8174.13 fps  V: 2120.86 fps  Δ: +285.4% [IMPROVEMENT]
+  Frame                   H: 0.13 ms     V: 0.48 ms     Δ: -72.5% [IMPROVEMENT]
+  Heap                    H: 453 MB      V: 437 MB
+
+  ► Redstone Clock Stress
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 1.62 ms     V: 1.55 ms     Δ: +4.3% [REGRESSION]
+  FPS                     H: 7851.90 fps  V: 2102.57 fps  Δ: +273.4% [IMPROVEMENT]
+  Frame                   H: 0.13 ms     V: 0.48 ms     Δ: -72.2% [IMPROVEMENT]
+  Heap                    H: 465 MB      V: 451 MB
+
+  ► Falling Sand Storm (150 blocks)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 1.66 ms     V: 1.60 ms     Δ: +3.9% [REGRESSION]
+  FPS                     H: 7890.54 fps  V: 2098.04 fps  Δ: +276.1% [IMPROVEMENT]
+  Frame                   H: 0.13 ms     V: 0.48 ms     Δ: -72.3% [IMPROVEMENT]
+  Heap                    H: 458 MB      V: 457 MB
+
+  ► Mixed Entity Chaos (300 entities)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 2.55 ms     V: 2.88 ms     Δ: -11.4% [IMPROVEMENT]
+  FPS                     H: 7742.42 fps  V: 2074.06 fps  Δ: +273.3% [IMPROVEMENT]
+  Frame                   H: 0.15 ms     V: 0.49 ms     Δ: -69.9% [IMPROVEMENT]
+  Heap                    H: 460 MB      V: 457 MB
+
+  ► Wither Boss Spawn
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 2.74 ms     V: 2.72 ms     Δ: +0.6% [SIMILAR]
+  FPS                     H: 6037.91 fps  V: 2013.13 fps  Δ: +199.9% [IMPROVEMENT]
+  Frame                   H: 0.18 ms     V: 0.50 ms     Δ: -63.7% [IMPROVEMENT]
+  Heap                    H: 454 MB      V: 462 MB
+
+  ► Lightning Storm (50 strikes)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 2.06 ms     V: 2.19 ms     Δ: -5.8% [IMPROVEMENT]
+  FPS                     H: 6851.29 fps  V: 1954.68 fps  Δ: +250.5% [IMPROVEMENT]
+  Frame                   H: 0.16 ms     V: 0.52 ms     Δ: -69.7% [IMPROVEMENT]
+  Heap                    H: 457 MB      V: 452 MB
+
+  ► Piston Array (100 pistons)
+  ────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  TPS                     H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Tick Time               H: 2.01 ms     V: 2.06 ms     Δ: -2.4% [IMPROVEMENT]
+  FPS                     H: 5818.87 fps  V: 1869.93 fps  Δ: +211.2% [IMPROVEMENT]
+  Frame                   H: 0.19 ms     V: 0.54 ms     Δ: -65.7% [IMPROVEMENT]
+  Heap                    H: 451 MB      V: 450 MB
+
+───────────────────────────────────────────────────────────────
+  BASELINE — SERVER PERFORMANCE (TPS & TICK TIME, 15s)
+───────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  Avg TPS                 H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Min TPS                 H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Max TPS                 H: 20.00 tps   V: 20.00 tps   Δ: +0.0% [SIMILAR]
+  Avg Tick                H: 2.24 ms     V: 2.21 ms     Δ: +1.4% [REGRESSION]
+  Min Tick                H: 1.94 ms     V: 1.70 ms     Δ: +14.3% [REGRESSION]
+  Max Tick                H: 4.25 ms     V: 5.11 ms     Δ: -16.8% [IMPROVEMENT]
+  p95 Tick                H: 2.51 ms     V: 3.25 ms     Δ: -22.8% [IMPROVEMENT]
+  p99 Tick                H: 3.42 ms     V: 3.93 ms     Δ: -12.9% [IMPROVEMENT]
+
+───────────────────────────────────────────────────────────────
+  BASELINE — CLIENT PERFORMANCE (FPS & FRAME TIME, 15s)
+───────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  Avg FPS                 H: 4713.75 fps  V: 1802.08 fps  Δ: +161.6% [IMPROVEMENT]
+  Min FPS                 H: 1336.90 fps  V: 295.16 fps  Δ: +352.9% [IMPROVEMENT]
+  Max FPS                 H: 7407.41 fps  V: 2227.17 fps  Δ: +232.6% [IMPROVEMENT]
+  Avg Frame               H: 0.23 ms     V: 0.57 ms     Δ: -59.7% [IMPROVEMENT]
+  Min Frame               H: 0.14 ms     V: 0.45 ms     Δ: -69.9% [IMPROVEMENT]
+  Max Frame               H: 0.75 ms     V: 3.39 ms     Δ: -77.9% [IMPROVEMENT]
+  p95 Frame               H: 0.36 ms     V: 0.71 ms     Δ: -49.7% [IMPROVEMENT]
+  p99 Frame               H: 0.47 ms     V: 0.82 ms     Δ: -43.0% [IMPROVEMENT]
+  Frame Drops (>33ms)     H: 0 fr        V: 0 fr        Δ: N/A
+
+───────────────────────────────────────────────────────────────
+  MEMORY & GARBAGE COLLECTION
+───────────────────────────────────────────────────────────────
+  Metric                  Hydrogen      Vanilla       Delta
+  ────────────────────────────────────────────────────────────
+  Avg Heap Used           H: 445 MB      V: 466 MB      Δ: -4.5% [IMPROVEMENT]
+  Heap Max                H: 3884 MB     V: 3884 MB
+  GC Pause Total          H: 12 ms       V: 48 ms       Δ: -75.0% [IMPROVEMENT]
+  GC Collections          H: 9           V: 43          Δ: -79.1% [IMPROVEMENT]
+
+───────────────────────────────────────────────────────────────
+  WORLD STATS (end of baseline phase)
+───────────────────────────────────────────────────────────────
+  Entity Count            H: 314         V: 318
+
+───────────────────────────────────────────────────────────────
+  SAMPLE COUNTS
+───────────────────────────────────────────────────────────────
+  Ticks Sampled           H: 601         V: 600
+  Frames Sampled          H: 1822        V: 4096
+
+───────────────────────────────────────────────────────────────
+  SUMMARY
+───────────────────────────────────────────────────────────────
+  TPS improvement:            +0.0%
+  Tick time reduction:        -1.4%
+  FPS improvement:            +161.6%
+  Frame time reduction:       +148.0%
+  GC pause reduction:         +300.0%
+  Best scenario (FPS):        Item Entity Flood (200 items)
+  Worst scenario (FPS):       TNT Explosion (25 blocks)
+
+═══════════════════════════════════════════════════════════════
+  End of Report — Hydromark v0.2.1
+═══════════════════════════════════════════════════════════════
