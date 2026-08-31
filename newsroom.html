@@ -7,24 +7,29 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* ── Newsroom-specific overrides ── */
+        /* ── Newsroom-specific overrides (matches index.html blue theme) ── */
         .newsroom-hero {
-            padding: 7rem 0 4rem;
-            background: #0b0d11;
-            border-bottom: 1px solid #1d212a;
+            padding: 8rem 0 4rem;
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
         }
 
         .newsroom-hero .pre-head {
             margin-bottom: 0.75rem;
+            justify-content: center;
+            display: flex;
+            align-items: center;
         }
 
         .newsroom-hero h1 {
             font-size: clamp(2.4rem, 6vw, 4.2rem);
             margin-bottom: 0.6rem;
+            text-align: center;
         }
 
         .newsroom-hero .hero-lead {
-            margin-bottom: 0;
+            margin: 0 auto;
         }
 
         /* ── Filter bar ── */
@@ -32,98 +37,80 @@
             display: flex;
             gap: 0.6rem;
             flex-wrap: wrap;
-            margin: 2.5rem 0 3rem;
+            justify-content: center;
+            margin: 0 0 3rem;
         }
 
         .filter-btn {
-            background: #131820;
-            border: 1px solid #2d3545;
-            color: #8f9db6;
-            padding: 0.4rem 1.1rem;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 0.5rem 1.2rem;
             font-size: 0.78rem;
             letter-spacing: 0.8px;
             text-transform: uppercase;
             cursor: pointer;
             transition: 0.15s;
             font-family: inherit;
+            border-radius: 20px;
         }
 
         .filter-btn:hover,
         .filter-btn.active {
-            background: #1e2530;
-            border-color: #4d5f7a;
-            color: #d6e0f5;
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
         }
 
         /* ── Post grid ── */
         .news-section {
-            padding: 4rem 0 6rem;
-            background: #0c0f13;
+            padding: 1rem 0 6rem;
+            background: var(--bg-alt);
         }
 
         .news-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 1.8rem;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.6rem;
+            align-items: start;
         }
 
-        /* ── Featured (spans full width) ── */
+        /* featured posts get a subtle accent border instead of spanning full width,
+           so the 3-column grid stays consistent */
         .news-card.featured {
-            grid-column: 1 / -1;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-        }
-
-        .news-card.featured .card-thumb {
-            height: 100%;
-            min-height: 220px;
-        }
-
-        .news-card.featured .card-body {
-            padding: 2.4rem 2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            border-color: var(--accent);
         }
 
         .news-card.featured .card-title {
-            font-size: 1.5rem;
-        }
-
-        .news-card.featured .card-excerpt {
-            -webkit-line-clamp: 4;
+            font-size: 1.1rem;
         }
 
         /* ── Base card ── */
         .news-card {
-            background: linear-gradient(180deg, #131318, #0a0a0d);
-            border: 1px solid rgba(255,255,255,0.04);
+            background: linear-gradient(180deg, var(--card), #0a0c12);
+            border: 1px solid var(--border);
+            border-radius: 14px;
             overflow: hidden;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
             cursor: pointer;
         }
 
         .news-card:hover {
             transform: translateY(-4px);
-            border-color: rgba(255,255,255,0.1);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+            border-color: var(--accent);
+            box-shadow: 0 14px 28px rgba(0,0,0,0.45);
         }
 
         .card-thumb {
             width: 100%;
-            height: 180px;
-            object-fit: cover;
+            height: 170px;
             display: block;
-            background: #0f1218;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            /* placeholder gradient when no image */
-            background: linear-gradient(135deg, #0f1420 0%, #161c28 50%, #0d1117 100%);
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, #0e1420 0%, #141b2c 50%, #0b0e15 100%);
             position: relative;
             overflow: hidden;
         }
 
-        /* decorative lines inside thumb placeholder */
         .card-thumb::after {
             content: '';
             position: absolute;
@@ -132,8 +119,8 @@
                 -55deg,
                 transparent,
                 transparent 18px,
-                rgba(255,255,255,0.018) 18px,
-                rgba(255,255,255,0.018) 19px
+                rgba(91,140,255,0.03) 18px,
+                rgba(91,140,255,0.03) 19px
             );
         }
 
@@ -143,8 +130,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
-            color: rgba(255,255,255,0.07);
+            font-size: 2.2rem;
+            color: rgba(91,140,255,0.18);
             z-index: 1;
         }
 
@@ -159,22 +146,20 @@
             margin-bottom: 0.8rem;
         }
 
+        /* simplified: one consistent tag style, matching the accent color */
         .tag {
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.8px;
-            padding: 0.18rem 0.55rem;
-            border-radius: 2px;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            background: rgba(91,140,255,0.10);
+            color: var(--accent-bright);
+            border: 1px solid rgba(91,140,255,0.2);
         }
 
-        .tag-release   { background: rgba(255,26,45,0.12);  color: #ff8b98; border: 1px solid rgba(255,26,45,0.2); }
-        .tag-update    { background: rgba(0,180,255,0.10);  color: #7dd4f0; border: 1px solid rgba(0,180,255,0.2); }
-        .tag-announce  { background: rgba(180,130,255,0.10); color: #c4a8ff; border: 1px solid rgba(180,130,255,0.2); }
-        .tag-devlog    { background: rgba(255,180,0,0.10);  color: #ffd470; border: 1px solid rgba(255,180,0,0.2); }
-        .tag-community { background: rgba(0,220,130,0.10);  color: #68edb0; border: 1px solid rgba(0,220,130,0.2); }
-
         .card-title {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 600;
             color: #e8eef8;
             margin-bottom: 0.55rem;
@@ -182,8 +167,8 @@
         }
 
         .card-excerpt {
-            font-size: 0.88rem;
-            color: #8d99b5;
+            font-size: 0.87rem;
+            color: var(--muted);
             line-height: 1.6;
             display: -webkit-box;
             -webkit-line-clamp: 3;
@@ -198,6 +183,7 @@
             gap: 1rem;
             font-size: 0.75rem;
             color: #5d697e;
+            flex-wrap: wrap;
         }
 
         .card-meta i {
@@ -221,6 +207,7 @@
             font-size: 0.6rem;
             font-weight: 700;
             color: white;
+            background: var(--accent);
         }
 
         /* ── Read-more link ── */
@@ -228,7 +215,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            color: #5a6e8c;
+            color: var(--accent-bright);
             font-size: 0.8rem;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -241,7 +228,7 @@
             padding: 0;
         }
 
-        .card-read-more:hover { color: #b7c7e3; }
+        .card-read-more:hover { color: white; }
         .card-read-more i { font-size: 0.65rem; }
 
         /* ── Modal ── */
@@ -262,8 +249,9 @@
         }
 
         .modal-box {
-            background: #0f1318;
-            border: 1px solid #2a3244;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
             max-width: 680px;
             width: 100%;
             max-height: 85vh;
@@ -283,23 +271,24 @@
             display: flex;
             justify-content: flex-end;
             padding: 1rem 1.2rem 0;
-            background: #0f1318;
+            background: var(--card);
             z-index: 1;
         }
 
         .modal-close button {
             background: none;
-            border: 1px solid #2a3244;
-            color: #8f9db6;
+            border: 1px solid var(--border);
+            color: var(--muted);
             width: 32px;
             height: 32px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
             transition: 0.15s;
             font-family: inherit;
         }
 
-        .modal-close button:hover { color: white; border-color: #5a6e8c; }
+        .modal-close button:hover { color: white; border-color: var(--accent); }
 
         .modal-content {
             padding: 1.2rem 2rem 2.4rem;
@@ -308,7 +297,7 @@
         .modal-tags { margin-bottom: 1rem; }
 
         .modal-title {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: #e8eef8;
             line-height: 1.3;
@@ -318,11 +307,12 @@
         .modal-meta {
             display: flex;
             gap: 1.2rem;
+            flex-wrap: wrap;
             font-size: 0.8rem;
             color: #5d697e;
             margin-bottom: 1.8rem;
             padding-bottom: 1.4rem;
-            border-bottom: 1px solid #1e2535;
+            border-bottom: 1px solid var(--border);
         }
 
         .modal-body {
@@ -357,85 +347,44 @@
             content: '—';
             position: absolute;
             left: 0;
-            color: #3d4f66;
+            color: var(--accent);
         }
 
-        /* ── Sidebar newsletter stub ── */
+        /* ── Simplified: single-column layout, sidebar removed for a cleaner look ── */
         .newsroom-layout {
-            display: grid;
-            grid-template-columns: 1fr 280px;
-            gap: 3rem;
-            align-items: start;
+            max-width: 1160px;
+            margin: 0 auto;
         }
 
-        .sidebar {
-            position: sticky;
-            top: 6rem;
-        }
-
-        .sidebar-card {
-            background: #0f1318;
-            border: 1px solid #232e3f;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .sidebar-card h4 {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #7a889e;
-            margin-bottom: 1rem;
-            font-weight: 500;
-        }
-
-        .sidebar-card p {
-            font-size: 0.85rem;
-            color: #8d99b5;
-            line-height: 1.55;
-            margin-bottom: 1rem;
-        }
-
-        .sidebar-discord {
+        .newsroom-footer-links {
+            max-width: 1160px;
+            margin: 3rem auto 0;
             display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .newsroom-footer-links a {
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            color: var(--muted);
             text-decoration: none;
-            color: #b7c7e3;
             font-size: 0.85rem;
-            border: 1px solid #2d3b54;
-            padding: 0.6rem 1rem;
+            border: 1px solid var(--border);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
             transition: 0.15s;
         }
 
-        .sidebar-discord:hover {
-            background: #1a2130;
-            border-color: #4d6080;
+        .newsroom-footer-links a:hover {
             color: white;
+            border-color: var(--accent);
+            background: rgba(91,140,255,0.06);
         }
 
-        .sidebar-discord i { color: #7289da; }
-
-        .sidebar-links li {
-            list-style: none;
-            border-bottom: 1px solid #1a2030;
-        }
-
-        .sidebar-links li:last-child { border: none; }
-
-        .sidebar-links a {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.6rem 0;
-            text-decoration: none;
-            color: #8d99b5;
-            font-size: 0.85rem;
-            transition: color 0.15s;
-        }
-
-        .sidebar-links a:hover { color: #d6e0f5; }
-        .sidebar-links a i { font-size: 0.7rem; }
+        .newsroom-footer-links a i { color: var(--accent-bright); }
 
         /* ── Empty state ── */
         .no-results {
@@ -445,17 +394,15 @@
             color: #5d697e;
         }
 
-        .no-results i { font-size: 2rem; margin-bottom: 1rem; display: block; }
+        .no-results i { font-size: 2rem; margin-bottom: 1rem; display: block; color: var(--accent-bright); }
 
         /* ── Responsive ── */
         @media (max-width: 900px) {
-            .newsroom-layout { grid-template-columns: 1fr; }
-            .sidebar { position: static; }
-            .news-card.featured { grid-template-columns: 1fr; }
-            .news-card.featured .card-thumb { height: 200px; }
+            .news-grid { grid-template-columns: repeat(2, 1fr); }
         }
 
         @media (max-width: 600px) {
+            .news-grid { grid-template-columns: 1fr; }
             .filter-bar { gap: 0.4rem; }
             .modal-content { padding: 1rem 1.2rem 2rem; }
         }
@@ -505,33 +452,13 @@
             </div>
 
             <div class="newsroom-layout">
-                <!-- Main grid -->
                 <div class="news-grid" id="news-grid"></div>
+            </div>
 
-                <!-- Sidebar -->
-                <aside class="sidebar">
-                    <div class="sidebar-card">
-                        <h4>// Join the community</h4>
-                        <p>Get real-time updates, report bugs, and chat with the team on Discord.</p>
-                        <a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener" class="sidebar-discord">
-                            <i class="fab fa-discord"></i> Join our Discord
-                        </a>
-                    </div>
-
-                    <div class="sidebar-card">
-                        <h4>// Quick links</h4>
-                        <ul class="sidebar-links">
-                            <li><a href="https://modrinth.com/organization/parallax" target="_blank" rel="noopener">All projects on Modrinth <i class="fas fa-arrow-right"></i></a></li>
-                            <li><a href="https://github.com/ParallaxStudiosMC" target="_blank" rel="noopener">GitHub <i class="fas fa-arrow-right"></i></a></li>
-                            <li><a href="index.html#projects">Featured projects <i class="fas fa-arrow-right"></i></a></li>
-                        </ul>
-                    </div>
-
-                    <div class="sidebar-card">
-                        <h4>// About this newsroom</h4>
-                        <p style="font-size:0.8rem; color:#6a7589;">Posts are written by Parallax Studios team members. For urgent issues, reach us on Discord.</p>
-                    </div>
-                </aside>
+            <div class="newsroom-footer-links">
+                <a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener"><i class="fab fa-discord"></i> Join our Discord</a>
+                <a href="https://modrinth.com/organization/parallax" target="_blank" rel="noopener"><i class="fas fa-cubes"></i> All projects on Modrinth</a>
+                <a href="https://github.com/ParallaxStudiosMC" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>
             </div>
         </div>
     </section>
@@ -554,7 +481,7 @@
                         <img src="/img/Modrinth_Logo.webp" alt="Modrinth" style="width:1em;height:1em;vertical-align:middle;margin-right:0.25em;">
                         Modrinth
                     </a>
-                    &nbsp;&nbsp;
+                    &nbsp;·&nbsp;
                     <i class="fab fa-discord"></i>
                     <a href="https://discord.gg/gAFEayg5gw" target="_blank" rel="noopener">Discord</a>
                 </p>
@@ -566,6 +493,36 @@
     // ── News data ──────────────────────────────────────────────────────────────
     // Add your posts here. Each object is one card.
     const NEWS = [
+                        {
+            id: -1,
+            featured: true,
+            tags: ["announce"],
+            title: "A notice on Minecraft 1.19.2 support",
+            excerpt: "Minecraft 1.19.2 support information",
+            date: "2026-08-31",
+            author: "zoeyaviation",
+            authorColor: "#5b8cff",
+            icon: "fa-globe",
+            projectSlug: "",
+            body: `
+                    Hello, everyone in the Parallax Studios community, we have updates on Minecraft 1.19.2 support for our mods, we will continue supporting Minecraft 1.19.2 for the time being, but support for 1.19.2 will be dropped following the launch of our next horror mod. It is not easy to manage two separate codebases for two separate game versions, so 1.19.2 will no-longer be supported after October 31, 2026. If you are still on 1.19.2, fear not! Our mods for 1.19.2 will still work, you just will not receive updates, and no new mods will be releasesd for it. If you find that you need the updates, or new mods. Please use 1.20.1, we are sorry if this impacts anyone, like modpack creators or anyone else. It is unfortunately time for us to stop making 1.19.2 mods soon!
+            `
+        },
+                {
+            id: 0,
+            featured: true,
+            tags: ["community"],
+            title: "Thank you for over 80K downloads!",
+            excerpt: "We have passed 80K downloads across Modrinth and CurseForge!",
+            date: "2026-08-31",
+            author: "zoeyaviation",
+            authorColor: "#5b8cff",
+            icon: "fa-globe",
+            projectSlug: "",
+            body: `
+                We are truly sorry for the delayed announcement, but we have surpassed 80,000 downloads on our projects, can you believe that!? We are so thankful for everyone who has helped us along the way. Be prepared for our new BEST mod yet, coming around Halloween this year. I hope you all are as ready as we are. The mod in question, we can't say much more than that it is our best yet, it will NOT be a dweller, and it is going to be quite scary! Get ready for a launch in approximately 2 months, and in the meantime, why don't you all try out Hydrogen, our performance mod for modern Minecraft, now updated to version v0.3.6, on CurseForge today!
+            `
+        },
         {
             id: 1,
             featured: true,
@@ -574,7 +531,7 @@
             excerpt: "NEVER ALONE is finally finished, and will be releasing on Modrinth soon. It is already on CurseForge right now.\nAnother announcement we have to make is that we have created a new Tech Division where we create and release games, game engines, software, and more. Most projects there will be Open Source.",
             date: "2026-04-22",
             author: "zoeyaviation",
-            authorColor: "#e05c6a",
+            authorColor: "#5b8cff",
             icon: "fa-globe",
             projectSlug: "never-alone",
             body: `
@@ -594,7 +551,7 @@
             excerpt: "We've hit over 60,000 total downloads across all Parallax Studios minecraft projects now!. We're so thankful for our awesome community who downloads our mods for Minecraft! We never thought we would get this far, yet here we are. Thank you! ❤️",
             date: "2026-04-22",
             author: "zoeyaviation",
-            authorColor: "#e05c6a",
+            authorColor: "#5b8cff",
             icon: "fa-heart",
             projectSlug: null,
             body: `
@@ -615,7 +572,7 @@
             excerpt: "The biggest Parallax Studios news in years, finally updating to 1.20.1.",
             date: "2026-03-29",
             author: "zoeyaviation",
-            authorColor: "#e05c6a",
+            authorColor: "#5b8cff",
             icon: "fa-globe",
             projectSlug: "",
             body: `
@@ -637,7 +594,7 @@
             excerpt: "We hit 50K total downloads across all Parallax projects. A short note from the team on where we've been and where we're headed.",
             date: "2026-01-28",
             author: "zoeyaviation",
-            authorColor: "#e05c6a",
+            authorColor: "#5b8cff",
             icon: "fa-heart",
             projectSlug: null,
             body: `
@@ -653,12 +610,13 @@
     ];
 
     // ── Helpers ────────────────────────────────────────────────────────────────
+    // simplified: all tags share one visual style now (see .tag rule in CSS)
     const TAG_META = {
-        release:   { label: 'Release',      cls: 'tag-release' },
-        update:    { label: 'Update',       cls: 'tag-update' },
-        announce:  { label: 'Announcement', cls: 'tag-announce' },
-        devlog:    { label: 'Dev Log',      cls: 'tag-devlog' },
-        community: { label: 'Community',    cls: 'tag-community' },
+        release:   { label: 'Release' },
+        update:    { label: 'Update' },
+        announce:  { label: 'Announcement' },
+        devlog:    { label: 'Dev Log' },
+        community: { label: 'Community' },
     };
 
     function formatDate(iso) {
@@ -668,8 +626,8 @@
 
     function tagHTML(tags) {
         return tags.map(t => {
-            const m = TAG_META[t] || { label: t, cls: '' };
-            return `<span class="tag ${m.cls}">${m.label}</span>`;
+            const m = TAG_META[t] || { label: t };
+            return `<span class="tag">${m.label}</span>`;
         }).join('');
     }
 
@@ -684,13 +642,10 @@
         card.dataset.tags = post.tags.join(',');
 
         const modrinthLink = post.projectSlug
-            ? `<a href="https://modrinth.com/project/${post.projectSlug}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#7dd4f0;font-size:0.75rem;"><i class="fas fa-external-link-alt"></i> Modrinth</a>`
+            ? `<a href="https://modrinth.com/project/${post.projectSlug}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--accent-bright);font-size:0.75rem;text-decoration:none;"><i class="fas fa-external-link-alt"></i> Modrinth</a>`
             : '';
 
         card.innerHTML = `
-            <div class="card-thumb">
-                <div class="thumb-icon"><i class="fas ${post.icon}"></i></div>
-            </div>
             <div class="card-body">
                 <div class="card-tags">${tagHTML(post.tags)}</div>
                 <div class="card-title">${post.title}</div>
@@ -699,7 +654,7 @@
                     <span><i class="fas fa-calendar-alt"></i>${formatDate(post.date)}</span>
                     ${modrinthLink}
                     <span class="card-author">
-                        <span class="author-dot" style="background:${post.authorColor};">${initials(post.author)}</span>
+                        <span class="author-dot">${initials(post.author)}</span>
                         ${post.author}
                     </span>
                 </div>
@@ -730,7 +685,7 @@
     // ── Modal ──────────────────────────────────────────────────────────────────
     function openModal(post) {
         const modrinthBtn = post.projectSlug
-            ? `<a href="https://modrinth.com/project/${post.projectSlug}" target="_blank" rel="noopener" style="color:#7dd4f0;font-size:0.85rem;"><i class="fas fa-external-link-alt"></i> View on Modrinth</a>`
+            ? `<a href="https://modrinth.com/project/${post.projectSlug}" target="_blank" rel="noopener" style="color:var(--accent-bright);font-size:0.85rem;text-decoration:none;"><i class="fas fa-external-link-alt"></i> View on Modrinth</a>`
             : '';
 
         document.getElementById('modal-content').innerHTML = `
@@ -739,7 +694,7 @@
             <div class="modal-meta">
                 <span><i class="fas fa-calendar-alt"></i> ${formatDate(post.date)}</span>
                 <span>
-                    <span class="author-dot" style="background:${post.authorColor};display:inline-flex;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center;font-size:0.55rem;font-weight:700;color:white;margin-right:0.3rem;">${initials(post.author)}</span>
+                    <span class="author-dot" style="display:inline-flex;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center;font-size:0.55rem;font-weight:700;color:white;margin-right:0.3rem;">${initials(post.author)}</span>
                     ${post.author}
                 </span>
                 ${modrinthBtn}
